@@ -342,18 +342,18 @@ function ScannerResults({ result }) {
           </thead>
           <tbody>
             {visibleRecommendations.map((trade, index) => (
-              <tr key={trade.symbol}>
-                <td>#{pageStart + index + 1}</td>
-                <th scope="row">{trade.symbol}</th>
-                <td>{trade.score}</td>
-                <td>{formatCurrency(trade.currentPrice ?? trade.close)}</td>
-                <td>{trade.rsi14}</td>
-                <td>{formatCurrency(trade.ema8)}</td>
-                <td>{formatCurrency(trade.ema20)}</td>
-                <td>{formatCurrency(trade.ema50)}</td>
-                <td>{formatCurrency(trade.sma50)}</td>
-                <td>{formatCurrency(trade.bbLower)}</td>
-                <td><PriceRangeBar low={trade.week52Low} high={trade.week52High} price={trade.currentPrice ?? trade.close} /></td>
+              <tr className="scanner-mobile-row" key={trade.symbol}>
+                <td data-label="Rank">#{pageStart + index + 1}</td>
+                <th scope="row" data-label="Symbol" data-mobile-symbol="true">{trade.symbol}</th>
+                <td data-label="Score">{trade.score}</td>
+                <td data-label="Current">{formatCurrency(trade.currentPrice ?? trade.close)}</td>
+                <td data-label="RSI14">{trade.rsi14}</td>
+                <td data-label="8 EMA">{formatCurrency(trade.ema8)}</td>
+                <td data-label="20 EMA">{formatCurrency(trade.ema20)}</td>
+                <td data-label="50 EMA">{formatCurrency(trade.ema50)}</td>
+                <td data-label="50 SMA">{formatCurrency(trade.sma50)}</td>
+                <td data-label="BB lower">{formatCurrency(trade.bbLower)}</td>
+                <td data-label="52W range"><PriceRangeBar low={trade.week52Low} high={trade.week52High} price={trade.currentPrice ?? trade.close} /></td>
               </tr>
             ))}
           </tbody>

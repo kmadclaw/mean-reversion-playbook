@@ -778,6 +778,133 @@ li {
   }
 }
 
+@media (max-width: 680px) {
+  .scanner-results {
+    padding: 10px;
+  }
+
+  .scanner-results__header {
+    grid-template-columns: 1fr;
+  }
+
+  .scanner-results__header > span,
+  .scanner-pagination {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .scanner-table-wrap {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .scanner-table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .scanner-table thead {
+    display: none;
+  }
+
+  .scanner-table,
+  .scanner-table tbody,
+  .scanner-table tr,
+  .scanner-table th,
+  .scanner-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .scanner-table tbody tr {
+    padding: 10px;
+    border: 1px solid #eadfd9;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .scanner-table th,
+  .scanner-table td {
+    padding: 7px 0;
+    border-bottom: 1px solid #eef1f3;
+    white-space: normal;
+  }
+
+  .scanner-table tbody th[data-mobile-symbol='true'] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 8px;
+    color: #0f3f62;
+    font-size: 1.05rem;
+    border-bottom: 1px solid #dfe7ed;
+  }
+
+  .scanner-table tbody th[data-mobile-symbol='true']::before {
+    content: attr(data-label);
+    color: #7c858c;
+    font-size: 0.66rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .scanner-table td {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    text-align: right;
+  }
+
+  .scanner-table td::before {
+    content: attr(data-label);
+    color: #7c858c;
+    font-size: 0.66rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .scanner-table td[data-label='Rank'],
+  .scanner-table td[data-label='Score'],
+  .scanner-table td[data-label='RSI14'] {
+    display: inline-grid;
+    width: calc(33.333% - 5px);
+    grid-template-columns: 1fr;
+    gap: 3px;
+    margin-right: 5px;
+    padding: 8px;
+    border-radius: 9px;
+    background: #f8fafb;
+    text-align: left;
+  }
+
+  .scanner-table td[data-label='Rank']::before,
+  .scanner-table td[data-label='Score']::before,
+  .scanner-table td[data-label='RSI14']::before {
+    font-size: 0.6rem;
+  }
+
+  .scanner-table td[data-label='52W range'] {
+    grid-template-columns: 1fr;
+    text-align: left;
+    border-bottom: 0;
+  }
+
+  .scanner-table td[data-label='52W range']::before {
+    margin-bottom: 2px;
+  }
+
+  .range-cell {
+    min-width: 0;
+  }
+}
+
 @media (max-width: 560px) {
   .app-shell {
     width: min(100% - 16px, 1180px);
