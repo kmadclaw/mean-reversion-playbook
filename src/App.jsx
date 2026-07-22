@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import { scannerRun } from './scannerRecommendations'
+import { scanStrategy } from './scannerEngine'
 import { bullishSetups, processRules, qualityScoreRules, strategyFramework } from './strategies'
 
 const pages = [
@@ -134,25 +134,26 @@ function formatCurrency(value) {
   return `$${value.toFixed(2)}`
 }
 
-function ScannerResults() {
-  const generated = new Date(scannerRun.generatedAt).toLocaleString(undefined, {
+function ScannerResults({ result }) {
+  const generated = new Date(result.generatedAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
   })
+  const modeLabel = result.mode === 'live' ? 'Live browser scan' : 'Snapshot fallback'
 
   return (
     <section className="scanner-results" role="region" aria-label="Scanner recommendations">
       <div className="scanner-results__header">
         <div>
-          <p className="eyebrow">Generated from expanded top100 technical indicator feed</p>
-          <h3>Scanner recommendations</h3>
-          <p>Last run: {generated}. These are directional 4–6 week option-structure templates, not exact contracts.</p>
+          <p className="eyebrow">{modeLabel} · {result.source}</p>
+          <h3>{result.strategyTitle} scanner recommendations</h3>
+          <p>Last run: {generated}. Results are generated for the selected strategy only; option structures are templates, not exact contracts.</p>
         </div>
-        <span>{scannerRun.recommendations.length} signals</span>
+        <span>{result.recommendations.length} signals</span>
       </div>
 
       <div className="recommendation-list">
-        {scannerRun.recommendations.map((trade, index) => (
+        {result.recommendations.map((trade, index) => (
           <article className="recommendation-card" key={trade.symbol}>
             <div className="recommendation-rank">#{index + 1}</div>
             <div className="recommendation-main">
@@ -160,6 +161,7 @@ function ScannerResults() {
                 <h4>{trade.symbol}</h4>
                 <span>{trade.direction}</span>
               </div>
+              <p><strong>Strategy fit:</strong> {trade.strategyFit}</p>
               <p>{trade.reasoning}</p>
               {trade.warnings ? <small>{trade.warnings}</small> : null}
             </div>
@@ -192,7 +194,7 @@ function ScannerResults() {
   )
 }
 
-function StrategyDetail({ setup, showScanner, onRunScanner }) {
+function StrategyDetail({ setup, scannerStatus, scannerResult, onRunScanner }) {
   return (
     <article className="strategy-detail" role="tabpanel" id={`${setup.id}-panel`} aria-labelledby={`${setup.id}-tab`}>
       <div className="detail-hero">
@@ -205,8 +207,8 @@ function StrategyDetail({ setup, showScanner, onRunScanner }) {
           <p className="summary">{setup.summary}</p>
         </div>
         <div className="future-actions" aria-label="Strategy tools">
-          <button type="button" className="scanner-action" onClick={onRunScanner} aria-pressed={showScanner}>
-            Run scanner
+          <button type="button" className="scanner-action" onClick={onRunScanner} disabled={scannerStatus === 'scanning'} aria-busy={scannerStatus === 'scanning'}>
+            {scannerStatus === 'scanning' ? 'Scanning…' : 'Run scanner'}
           </button>
           <button type="button" disabled aria-label="Backtest coming soon">
             Backtest coming soon
@@ -214,7 +216,8 @@ function StrategyDetail({ setup, showScanner, onRunScanner }) {
         </div>
       </div>
 
-      {showScanner ? <ScannerResults /> : null}
+      {scannerStatus === 'scanning' ? <div className="scanner-loading" role="status">Scanning live market data for {setup.title}…</div> : null}
+      {scannerStatus === 'done' && scannerResult ? <ScannerResults result={scannerResult} /> : null}
 
       <div className="rule-grid compact">
         <DetailGroup title="Pattern" items={setup.pattern} />
@@ -228,7 +231,7 @@ function StrategyDetail({ setup, showScanner, onRunScanner }) {
   )
 }
 
-function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup, showScanner, onRunScanner }) {
+function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup, scannerStatus, scannerResult, onRunScanner }) {
   return (
     <section className="content-page strategy-workspace">
       <PageHeader
@@ -261,7 +264,7 @@ function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup, showScanner,
           </div>
         </aside>
 
-        <StrategyDetail setup={activeSetup} showScanner={showScanner} onRunScanner={onRunScanner} />
+        <StrategyDetail setup={activeSetup} scannerStatus={scannerStatus} scannerResult={scannerResult} onRunScanner={onRunScanner} />
       </div>
     </section>
   )
@@ -301,8 +304,23 @@ function App() {
   const sortedSetups = [...bullishSetups].sort((a, b) => a.rank - b.rank)
   const [activePage, setActivePage] = useState('overview')
   const [activeSetupId, setActiveSetupId] = useState(sortedSetups[0].id)
-  const [showScanner, setShowScanner] = useState(false)
+  const [scannerStatus, setScannerStatus] = useState('idle')
+  const [scannerResult, setScannerResult] = useState(null)
   const activeSetup = sortedSetups.find((setup) => setup.id === activeSetupId) ?? sortedSetups[0]
+
+  const handleSelectSetup = (setupId) => {
+    setActiveSetupId(setupId)
+    setScannerStatus('idle')
+    setScannerResult(null)
+  }
+
+  const handleRunScanner = async () => {
+    setScannerStatus('scanning')
+    setScannerResult(null)
+    const result = await scanStrategy(activeSetup.id)
+    setScannerResult(result)
+    setScannerStatus('done')
+  }
 
   return (
     <main className="app-shell">
@@ -314,9 +332,10 @@ function App() {
           <StrategiesPage
             sortedSetups={sortedSetups}
             activeSetup={activeSetup}
-            onSelectSetup={setActiveSetupId}
-            showScanner={showScanner}
-            onRunScanner={() => setShowScanner(true)}
+            onSelectSetup={handleSelectSetup}
+            scannerStatus={scannerStatus}
+            scannerResult={scannerResult}
+            onRunScanner={handleRunScanner}
           />
         ) : null}
         {activePage === 'roadmap' ? <RoadmapPage /> : null}
