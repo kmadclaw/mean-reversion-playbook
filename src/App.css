@@ -1,0 +1,350 @@
+main {
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 72px;
+}
+
+.top-nav {
+  position: sticky;
+  top: 14px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 40px;
+  padding: 8px;
+  border: 1px solid rgba(22, 35, 46, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 254, 249, 0.84);
+  box-shadow: 0 18px 70px rgba(18, 50, 74, 0.12);
+  backdrop-filter: blur(16px);
+  overflow-x: auto;
+}
+
+.top-nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: #4a5a65;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.top-nav a:hover,
+.top-nav a:focus-visible {
+  color: #fffef9;
+  background: #174a6a;
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+.hero {
+  min-height: 70vh;
+  display: grid;
+  align-content: center;
+  padding: clamp(40px, 8vw, 96px);
+  border: 1px solid rgba(22, 35, 46, 0.12);
+  border-radius: 36px;
+  background:
+    linear-gradient(135deg, rgba(255, 254, 249, 0.92), rgba(255, 247, 235, 0.88)),
+    linear-gradient(135deg, #174a6a, #ff6600);
+  box-shadow: 0 32px 100px rgba(18, 50, 74, 0.15);
+}
+
+.eyebrow {
+  margin-bottom: 16px;
+  color: #d95600;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 900px;
+  margin-bottom: 18px;
+  color: #12324a;
+  font-size: clamp(3rem, 8vw, 6.8rem);
+  line-height: 0.9;
+  letter-spacing: -0.075em;
+}
+
+.lede {
+  max-width: 760px;
+  color: #344a59;
+  font-size: clamp(1.12rem, 2vw, 1.45rem);
+  line-height: 1.55;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 26px 0 34px;
+}
+
+.button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.button.primary {
+  color: #fffef9;
+  background: #12324a;
+}
+
+.button.secondary {
+  color: #12324a;
+  border: 1px solid rgba(18, 50, 74, 0.18);
+  background: #fffef9;
+}
+
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.metric-strip div,
+.process-card,
+.setup-card,
+.roadmap-grid article,
+.score-card {
+  border: 1px solid rgba(22, 35, 46, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 254, 249, 0.78);
+  box-shadow: 0 18px 60px rgba(18, 50, 74, 0.08);
+}
+
+.metric-strip div {
+  padding: 18px;
+}
+
+.metric-strip span {
+  display: block;
+  margin-bottom: 8px;
+  color: #6a7882;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metric-strip strong {
+  display: block;
+  color: #12324a;
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.panel {
+  margin-top: 28px;
+  padding: clamp(28px, 5vw, 56px);
+  border: 1px solid rgba(22, 35, 46, 0.12);
+  border-radius: 36px;
+  background: rgba(255, 254, 249, 0.72);
+}
+
+.panel.alt {
+  background: rgba(244, 240, 231, 0.7);
+}
+
+.section-heading {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.section-heading h2 {
+  color: #12324a;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.section-heading p,
+.summary,
+.roadmap-grid p {
+  color: #4a5a65;
+  line-height: 1.55;
+}
+
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.process-card {
+  padding: 22px;
+}
+
+.process-card h3,
+.setup-card h3,
+.roadmap-grid h3,
+.score-card h3 {
+  color: #12324a;
+  letter-spacing: -0.025em;
+}
+
+ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+li {
+  margin-bottom: 0.48rem;
+  color: #344a59;
+  line-height: 1.45;
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.setup-card {
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.setup-card__topline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.rank,
+.label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.rank {
+  color: #fffef9;
+  background: #174a6a;
+}
+
+.label {
+  color: #9a3d00;
+  background: rgba(255, 102, 0, 0.11);
+}
+
+.setup-card h3 {
+  margin-bottom: 10px;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+}
+
+.rule-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.rule-grid section {
+  padding: 18px;
+  border-radius: 18px;
+  background: #fffef9;
+  border: 1px solid rgba(22, 35, 46, 0.1);
+}
+
+.rule-grid h4 {
+  margin-bottom: 10px;
+  color: #174a6a;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.roadmap-grid article,
+.score-card {
+  padding: 22px;
+}
+
+.score-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.score-list span {
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: #12324a;
+  background: #f3eadf;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 920px) {
+  .metric-strip,
+  .process-grid,
+  .rule-grid,
+  .roadmap-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  main {
+    width: min(100% - 24px, 1200px);
+    padding-top: 12px;
+  }
+
+  .top-nav {
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .hero,
+  .panel {
+    border-radius: 24px;
+  }
+
+  h1 {
+    font-size: 3.2rem;
+  }
+}
