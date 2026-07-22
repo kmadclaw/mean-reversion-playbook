@@ -340,19 +340,6 @@ function UniversePage() {
                       >
                         {stock.symbol}
                       </button>
-                      {isActive ? (
-                        <ChartPanel
-                          className="mobile-card-chart"
-                          ariaLabel={`Inline price chart for ${selectedSymbol}`}
-                          selectedStock={selectedStock}
-                          selectedSymbol={selectedSymbol}
-                          snapshot={snapshot}
-                          visiblePoints={visiblePoints}
-                          ranges={ranges}
-                          selectedRange={selectedRange}
-                          onSelectRange={setSelectedRange}
-                        />
-                      ) : null}
                     </th>
                     <td className="group-cell" data-label="Group">{stock.group}</td>
                     <td className="current-cell" data-label="Current">{formatCurrency(rowSnapshot.price)}</td>
@@ -367,6 +354,47 @@ function UniversePage() {
               })}
             </tbody>
           </table>
+        </div>
+        <div className="mobile-tile-list mobile-universe-tiles" aria-label="Liquid options universe ticker tiles">
+          {LIQUID_OPTIONS_UNIVERSE.map((stock, index) => {
+            const rowSnapshot = universeSnapshots[stock.symbol] ?? makeFallbackSnapshot(stock.symbol)
+            const isActive = stock.symbol === selectedSymbol
+            return (
+              <IndicatorTile
+                key={stock.symbol}
+                rank={`#${index + 1}`}
+                symbol={stock.symbol}
+                name={stock.name}
+                selected={isActive}
+                onSelect={() => {
+                  setSelectedSymbol(stock.symbol)
+                  setSelectedRange('3mo')
+                }}
+                chips={[formatCurrency(rowSnapshot.price), `RSI ${rowSnapshot.rsi14}`]}
+                metrics={[
+                  { label: 'Group', value: stock.group },
+                  { label: '8 EMA', value: formatCurrency(rowSnapshot.ema8) },
+                  { label: '20 EMA', value: formatCurrency(rowSnapshot.ema20) },
+                  { label: '50 EMA', value: formatCurrency(rowSnapshot.ema50) },
+                  { label: '50 SMA', value: formatCurrency(rowSnapshot.sma50) },
+                ]}
+                range={{ low: rowSnapshot.week52Low, high: rowSnapshot.week52High, price: rowSnapshot.price }}
+                chart={isActive ? (
+                  <ChartPanel
+                    className="tile-chart-panel"
+                    ariaLabel={`Inline price chart for ${selectedSymbol}`}
+                    selectedStock={selectedStock}
+                    selectedSymbol={selectedSymbol}
+                    snapshot={snapshot}
+                    visiblePoints={visiblePoints}
+                    ranges={ranges}
+                    selectedRange={selectedRange}
+                    onSelectRange={setSelectedRange}
+                  />
+                ) : null}
+              />
+            )
+          })}
         </div>
         <ChartPanel
           className="desktop-chart-panel"
@@ -391,6 +419,44 @@ function PriceRangeBar({ low, high, price }) {
       <div className="range-track"><span style={{ left: `${position}%` }} /></div>
       <div className="range-labels"><small>{formatCurrency(low)}</small><small>{position.toFixed(0)}%</small><small>{formatCurrency(high)}</small></div>
     </div>
+  )
+}
+
+function IndicatorTile({ rank, symbol, name, chips, metrics, range, selected = false, onSelect, chart }) {
+  const TileTag = onSelect ? 'button' : 'div'
+  return (
+    <article className={selected ? 'indicator-tile active' : 'indicator-tile'}>
+      <TileTag
+        type={onSelect ? 'button' : undefined}
+        className="indicator-tile__header"
+        onClick={onSelect}
+        aria-label={onSelect ? `Select ${symbol}` : undefined}
+      >
+        <span className="indicator-tile__rank">{rank}</span>
+        <span className="indicator-tile__identity">
+          <strong>{symbol}</strong>
+          <small>{name}</small>
+        </span>
+        <span className="indicator-tile__chips">
+          {chips.map((chip) => <span key={chip}>{chip}</span>)}
+        </span>
+      </TileTag>
+      <dl className="indicator-tile__metrics">
+        {metrics.map((metric) => (
+          <div key={metric.label}>
+            <dt>{metric.label}</dt>
+            <dd>{metric.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {range ? (
+        <div className="indicator-tile__range">
+          <span>52W range</span>
+          <PriceRangeBar low={range.low} high={range.high} price={range.price} />
+        </div>
+      ) : null}
+      {chart ? <div className="indicator-tile__chart">{chart}</div> : null}
+    </article>
   )
 }
 
@@ -482,6 +548,31 @@ function ScannerResults({ result }) {
             })}
           </tbody>
         </table>
+      </div>
+      <div className="mobile-tile-list mobile-scanner-tiles" aria-label="Scanner result tiles">
+        {visibleRecommendations.map((trade, index) => {
+          const rank = pageStart + index + 1
+          const stock = getUniverseStock(trade.symbol)
+          const currentPrice = trade.currentPrice ?? trade.close
+          return (
+            <IndicatorTile
+              key={trade.symbol}
+              rank={`#${rank}`}
+              symbol={trade.symbol}
+              name={stock?.name ?? stock?.group ?? 'Ticker'}
+              chips={[`Score ${trade.score}`, `RSI ${trade.rsi14}`]}
+              metrics={[
+                { label: 'Current', value: formatCurrency(currentPrice) },
+                { label: '8 EMA', value: formatCurrency(trade.ema8) },
+                { label: '20 EMA', value: formatCurrency(trade.ema20) },
+                { label: '50 EMA', value: formatCurrency(trade.ema50) },
+                { label: '50 SMA', value: formatCurrency(trade.sma50) },
+                { label: 'BB lower', value: formatCurrency(trade.bbLower) },
+              ]}
+              range={{ low: trade.week52Low, high: trade.week52High, price: currentPrice }}
+            />
+          )
+        })}
       </div>
     </section>
   )

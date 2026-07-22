@@ -551,7 +551,7 @@ li {
   display: inline;
 }
 
-.mobile-card-chart {
+.mobile-tile-list {
   display: none;
 }
 
@@ -870,6 +870,158 @@ li {
   .scanner-pagination {
     justify-content: space-between;
     width: 100%;
+  }
+
+  .scanner-table-wrap,
+  .universe-table-wrap {
+    display: none;
+  }
+
+  .mobile-tile-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .indicator-tile {
+    padding: 12px;
+    border: 1px solid #eadfd9;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .indicator-tile.active {
+    border-color: #ffd3bf;
+    background: #fffaf7;
+  }
+
+  .indicator-tile__header {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 10px;
+    align-items: center;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+  }
+
+  button.indicator-tile__header {
+    cursor: pointer;
+  }
+
+  .indicator-tile__rank {
+    grid-row: span 2;
+    justify-self: start;
+    padding: 5px 8px;
+    border-radius: 999px;
+    color: #0f3f62;
+    background: #eef6fb;
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+
+  .indicator-tile__identity {
+    min-width: 0;
+  }
+
+  .indicator-tile__identity strong {
+    display: block;
+    color: #0f3f62;
+    font-size: 1.05rem;
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+  }
+
+  .indicator-tile__identity small {
+    display: block;
+    overflow: hidden;
+    max-width: 230px;
+    color: #68747c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .indicator-tile__chips {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  .indicator-tile__chips span {
+    padding: 5px 7px;
+    border-radius: 999px;
+    color: #8b2b13;
+    background: #fff0e8;
+    font-size: 0.7rem;
+    font-weight: 900;
+  }
+
+  .indicator-tile__metrics {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 10px 0 0;
+  }
+
+  .indicator-tile__metrics div {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eef1f3;
+  }
+
+  .indicator-tile__metrics dt,
+  .indicator-tile__range > span {
+    color: #7c858c;
+    font-size: 0.66rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .indicator-tile__metrics dd {
+    margin: 0;
+    color: #25313a;
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-align: right;
+  }
+
+  .indicator-tile__range {
+    display: grid;
+    gap: 6px;
+    padding-top: 10px;
+  }
+
+  .indicator-tile__chart {
+    margin-top: 12px;
+  }
+
+  .tile-chart-panel {
+    position: static;
+    display: block;
+    padding: 12px;
+    border-color: #ffd3bf;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .tile-chart-panel .price-chart {
+    height: 150px;
+  }
+
+  .tile-chart-panel .price-stats--wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .scanner-table-wrap,
