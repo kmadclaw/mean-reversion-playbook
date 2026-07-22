@@ -164,6 +164,10 @@ function makeFallbackSnapshot(symbol) {
   }
 }
 
+function getUniverseStock(symbol) {
+  return LIQUID_OPTIONS_UNIVERSE.find((stock) => stock.symbol === symbol)
+}
+
 function PriceSparkline({ points }) {
   const safePoints = points.length ? points : [{ close: 1 }]
   const closes = safePoints.map((point) => (typeof point === 'number' ? point : point.close))
@@ -259,10 +263,30 @@ function UniversePage() {
                 const isActive = stock.symbol === selectedSymbol
                 return (
                   <tr className={isActive ? 'active' : undefined} key={stock.symbol}>
-                    <th scope="row">
+                    <th scope="row" className="symbol-cell">
+                      <div className="mobile-row-title">
+                        <button
+                          type="button"
+                          className="universe-symbol-button"
+                          onClick={() => {
+                            setSelectedSymbol(stock.symbol)
+                            setSelectedRange('3mo')
+                          }}
+                          aria-label={`Select ${stock.symbol}`}
+                        >
+                          {stock.symbol}
+                        </button>
+                        <div className="mobile-row-name">
+                          <small>{stock.name}</small>
+                        </div>
+                        <div className="mobile-row-chips">
+                          <span>{formatCurrency(rowSnapshot.price)}</span>
+                          <span>RSI {rowSnapshot.rsi14}</span>
+                        </div>
+                      </div>
                       <button
                         type="button"
-                        className="universe-symbol-button"
+                        className="universe-symbol-button desktop-symbol"
                         onClick={() => {
                           setSelectedSymbol(stock.symbol)
                           setSelectedRange('3mo')
@@ -272,14 +296,14 @@ function UniversePage() {
                         {stock.symbol}
                       </button>
                     </th>
-                    <td>{stock.group}</td>
-                    <td>{formatCurrency(rowSnapshot.price)}</td>
-                    <td>{rowSnapshot.rsi14}</td>
-                    <td>{formatCurrency(rowSnapshot.ema8)}</td>
-                    <td>{formatCurrency(rowSnapshot.ema20)}</td>
-                    <td>{formatCurrency(rowSnapshot.ema50)}</td>
-                    <td>{formatCurrency(rowSnapshot.sma50)}</td>
-                    <td><PriceRangeBar low={rowSnapshot.week52Low} high={rowSnapshot.week52High} price={rowSnapshot.price} /></td>
+                    <td className="group-cell" data-label="Group">{stock.group}</td>
+                    <td className="current-cell" data-label="Current">{formatCurrency(rowSnapshot.price)}</td>
+                    <td className="rsi-cell" data-label="RSI14">{rowSnapshot.rsi14}</td>
+                    <td data-label="8 EMA">{formatCurrency(rowSnapshot.ema8)}</td>
+                    <td data-label="20 EMA">{formatCurrency(rowSnapshot.ema20)}</td>
+                    <td data-label="50 EMA">{formatCurrency(rowSnapshot.ema50)}</td>
+                    <td data-label="50 SMA">{formatCurrency(rowSnapshot.sma50)}</td>
+                    <td data-label="52W range"><PriceRangeBar low={rowSnapshot.week52Low} high={rowSnapshot.week52High} price={rowSnapshot.price} /></td>
                   </tr>
                 )
               })}
@@ -396,21 +420,38 @@ function ScannerResults({ result }) {
             </tr>
           </thead>
           <tbody>
-            {visibleRecommendations.map((trade, index) => (
-              <tr className="scanner-mobile-row" key={trade.symbol}>
-                <td data-label="Rank">#{pageStart + index + 1}</td>
-                <th scope="row" data-label="Symbol" data-mobile-symbol="true">{trade.symbol}</th>
-                <td data-label="Score">{trade.score}</td>
-                <td data-label="Current">{formatCurrency(trade.currentPrice ?? trade.close)}</td>
-                <td data-label="RSI14">{trade.rsi14}</td>
-                <td data-label="8 EMA">{formatCurrency(trade.ema8)}</td>
-                <td data-label="20 EMA">{formatCurrency(trade.ema20)}</td>
-                <td data-label="50 EMA">{formatCurrency(trade.ema50)}</td>
-                <td data-label="50 SMA">{formatCurrency(trade.sma50)}</td>
-                <td data-label="BB lower">{formatCurrency(trade.bbLower)}</td>
-                <td data-label="52W range"><PriceRangeBar low={trade.week52Low} high={trade.week52High} price={trade.currentPrice ?? trade.close} /></td>
-              </tr>
-            ))}
+            {visibleRecommendations.map((trade, index) => {
+              const rank = pageStart + index + 1
+              const stock = getUniverseStock(trade.symbol)
+              return (
+                <tr className="scanner-mobile-row" key={trade.symbol}>
+                  <td className="rank-cell" data-label="Rank">#{rank}</td>
+                  <th scope="row" className="symbol-cell" data-mobile-symbol="true">
+                    <div className="mobile-row-title">
+                      <span className="mobile-rank">#{rank}</span>
+                      <div className="mobile-row-name">
+                        <strong>{trade.symbol}</strong>
+                        <small>{stock?.name ?? stock?.group ?? 'Ticker'}</small>
+                      </div>
+                      <div className="mobile-row-chips">
+                        <span>Score {trade.score}</span>
+                        <span>RSI {trade.rsi14}</span>
+                      </div>
+                    </div>
+                    <span className="desktop-symbol">{trade.symbol}</span>
+                  </th>
+                  <td className="score-cell" data-label="Score">{trade.score}</td>
+                  <td data-label="Current">{formatCurrency(trade.currentPrice ?? trade.close)}</td>
+                  <td className="rsi-cell" data-label="RSI14">{trade.rsi14}</td>
+                  <td data-label="8 EMA">{formatCurrency(trade.ema8)}</td>
+                  <td data-label="20 EMA">{formatCurrency(trade.ema20)}</td>
+                  <td data-label="50 EMA">{formatCurrency(trade.ema50)}</td>
+                  <td data-label="50 SMA">{formatCurrency(trade.sma50)}</td>
+                  <td data-label="BB lower">{formatCurrency(trade.bbLower)}</td>
+                  <td data-label="52W range"><PriceRangeBar low={trade.week52Low} high={trade.week52High} price={trade.currentPrice ?? trade.close} /></td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
