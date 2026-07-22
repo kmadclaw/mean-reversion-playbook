@@ -2,6 +2,13 @@ import { useState } from 'react'
 import './App.css'
 import { bullishSetups, processRules, qualityScoreRules, strategyFramework } from './strategies'
 
+const pages = [
+  { id: 'overview', label: 'Overview', eyebrow: 'r/meanreversion' },
+  { id: 'rules', label: 'Core rules', eyebrow: 'Execution' },
+  { id: 'strategies', label: 'Strategies', eyebrow: 'Setups' },
+  { id: 'roadmap', label: 'Roadmap', eyebrow: 'Coming soon' },
+]
+
 function RuleList({ items }) {
   return (
     <ul>
@@ -21,6 +28,107 @@ function DetailGroup({ title, items }) {
   )
 }
 
+function SideNav({ activePage, onSelectPage }) {
+  return (
+    <aside className="sidebar-card">
+      <div className="brand-block">
+        <div className="brand-mark">MR</div>
+        <div>
+          <p>Playbook</p>
+          <span>Bullish pullbacks</span>
+        </div>
+      </div>
+
+      <nav className="side-nav" aria-label="Playbook sections">
+        {pages.map((page) => {
+          const isActive = page.id === activePage
+          return (
+            <button
+              type="button"
+              key={page.id}
+              aria-current={isActive ? 'page' : undefined}
+              className={isActive ? 'side-nav-item active' : 'side-nav-item'}
+              onClick={() => onSelectPage(page.id)}
+            >
+              <span>{page.eyebrow}</span>
+              {page.label}
+            </button>
+          )
+        })}
+      </nav>
+    </aside>
+  )
+}
+
+function PageHeader({ eyebrow, title, description, actions }) {
+  return (
+    <header className="page-header">
+      <div>
+        <p className="eyebrow">{eyebrow}</p>
+        <h1>{title}</h1>
+        {description ? <p className="lede">{description}</p> : null}
+      </div>
+      {actions ? <div className="header-actions">{actions}</div> : null}
+    </header>
+  )
+}
+
+function OverviewPage({ onSelectPage }) {
+  return (
+    <section className="content-page compact-page">
+      <PageHeader
+        eyebrow="Trading strategy library · sleek v0.3"
+        title={strategyFramework.name}
+        description={strategyFramework.premise}
+        actions={
+          <button className="button primary" type="button" onClick={() => onSelectPage('strategies')}>
+            Select strategy
+          </button>
+        }
+      />
+
+      <div className="metric-strip" aria-label="Strategy framework summary">
+        <div>
+          <span>Timeframe</span>
+          <strong>{strategyFramework.timeframe}</strong>
+        </div>
+        <div>
+          <span>Universe</span>
+          <strong>{strategyFramework.assetUniverse}</strong>
+        </div>
+        <div>
+          <span>Baseline mean</span>
+          <strong>{strategyFramework.baselineMean.join(' + ')}</strong>
+        </div>
+        <div>
+          <span>Trend filter</span>
+          <strong>{strategyFramework.trendFilter}</strong>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function RulesPage() {
+  return (
+    <section className="content-page">
+      <PageHeader
+        eyebrow="Execution mechanics"
+        title="Core rules before any setup qualifies"
+        description="Oversold creates a candidate. Confirmation creates the trade. Keep each rule compact enough to become a scanner predicate later."
+      />
+      <div className="process-grid">
+        {processRules.map((group) => (
+          <article className="process-card" key={group.title}>
+            <h3>{group.title}</h3>
+            <RuleList items={group.rules} />
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function StrategyDetail({ setup }) {
   return (
     <article className="strategy-detail" role="tabpanel" id={`${setup.id}-panel`} aria-labelledby={`${setup.id}-tab`}>
@@ -30,7 +138,7 @@ function StrategyDetail({ setup }) {
             <span className="rank">#{setup.rank}</span>
             <span className="label">{setup.label}</span>
           </div>
-          <h3>{setup.title}</h3>
+          <h2>{setup.title}</h2>
           <p className="summary">{setup.summary}</p>
         </div>
         <div className="future-actions" aria-label="Future tools">
@@ -55,134 +163,92 @@ function StrategyDetail({ setup }) {
   )
 }
 
+function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup }) {
+  return (
+    <section className="content-page strategy-workspace">
+      <PageHeader
+        eyebrow="Strategy selector"
+        title="Select a bullish setup"
+        description="Choose a setup on the left. The detail page loads on the right, like a compact Reddit sidebar + post view."
+      />
+
+      <div className="strategy-shell">
+        <aside className="strategy-tabs" aria-label="Bullish setup types">
+          <div role="tablist" aria-orientation="vertical">
+            {sortedSetups.map((setup) => {
+              const isActive = setup.id === activeSetup.id
+              return (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`${setup.id}-tab`}
+                  aria-controls={`${setup.id}-panel`}
+                  aria-selected={isActive}
+                  className={isActive ? 'strategy-tab active' : 'strategy-tab'}
+                  key={setup.id}
+                  onClick={() => onSelectSetup(setup.id)}
+                >
+                  <span>#{setup.rank}</span>
+                  {setup.title}
+                </button>
+              )
+            })}
+          </div>
+        </aside>
+
+        <StrategyDetail setup={activeSetup} />
+      </div>
+    </section>
+  )
+}
+
+function RoadmapPage() {
+  return (
+    <section className="content-page roadmap">
+      <PageHeader eyebrow="Later version" title="Scanner build path" description={strategyFramework.scannerVision} />
+      <div className="roadmap-grid">
+        <article>
+          <h3>Phase 1 · Strategy library</h3>
+          <p>Define human-readable strategies, chart rules, entry triggers, and invalidation logic.</p>
+        </article>
+        <article>
+          <h3>Phase 2 · Deterministic signals</h3>
+          <p>Translate each strategy into indicator predicates: EMA/SMA state, Bollinger events, RSI, candles, support distance.</p>
+        </article>
+        <article>
+          <h3>Phase 3 · Options layer</h3>
+          <p>Attach expiry selection, delta bands, liquidity filters, bid/ask spread checks, and debit/credit risk templates.</p>
+        </article>
+      </div>
+      <div className="score-card">
+        <h3>Starting quality score</h3>
+        <div className="score-list">
+          {qualityScoreRules.map((rule) => (
+            <span key={rule}>{rule}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function App() {
   const sortedSetups = [...bullishSetups].sort((a, b) => a.rank - b.rank)
+  const [activePage, setActivePage] = useState('overview')
   const [activeSetupId, setActiveSetupId] = useState(sortedSetups[0].id)
   const activeSetup = sortedSetups.find((setup) => setup.id === activeSetupId) ?? sortedSetups[0]
 
   return (
-    <main>
-      <nav className="top-nav" aria-label="Strategy navigation">
-        <a href="#framework">Framework</a>
-        <a href="#rules">Rules</a>
-        <a href="#strategies">Strategies</a>
-        <a href="#scanner-roadmap">Roadmap</a>
-      </nav>
-
-      <section className="hero" id="framework">
-        <div className="eyebrow">Trading strategy library · v0.2</div>
-        <h1>{strategyFramework.name}</h1>
-        <p className="lede">{strategyFramework.premise}</p>
-        <div className="hero-actions">
-          <a className="button primary" href="#strategies">Select a strategy</a>
-          <a className="button secondary" href="#scanner-roadmap">Future scanners</a>
-        </div>
-        <div className="metric-strip" aria-label="Strategy framework summary">
-          <div>
-            <span>Timeframe</span>
-            <strong>{strategyFramework.timeframe}</strong>
-          </div>
-          <div>
-            <span>Universe</span>
-            <strong>{strategyFramework.assetUniverse}</strong>
-          </div>
-          <div>
-            <span>Baseline mean</span>
-            <strong>{strategyFramework.baselineMean.join(' + ')}</strong>
-          </div>
-          <div>
-            <span>Trend filter</span>
-            <strong>{strategyFramework.trendFilter}</strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="panel" id="rules">
-        <div className="section-heading">
-          <span className="eyebrow">Execution mechanics</span>
-          <h2>Core rules before any setup qualifies</h2>
-          <p>
-            Oversold creates a candidate. Confirmation creates the trade. Keep the rules simple enough to become
-            scanner predicates later.
-          </p>
-        </div>
-        <div className="process-grid">
-          {processRules.map((group) => (
-            <article className="process-card" key={group.title}>
-              <h3>{group.title}</h3>
-              <RuleList items={group.rules} />
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="panel alt strategy-workspace" id="strategies">
-        <div className="section-heading">
-          <span className="eyebrow">Strategy selector</span>
-          <h2>Pick one setup, read one clean strategy page</h2>
-          <p>
-            Tabs keep the UX simple and accessible. Scanner and backtest actions are visible but disabled to signal
-            planned future versions.
-          </p>
-        </div>
-
-        <div className="strategy-shell">
-          <aside className="strategy-tabs" aria-label="Bullish setup types">
-            <div role="tablist" aria-orientation="vertical">
-              {sortedSetups.map((setup) => {
-                const isActive = setup.id === activeSetup.id
-                return (
-                  <button
-                    type="button"
-                    role="tab"
-                    id={`${setup.id}-tab`}
-                    aria-controls={`${setup.id}-panel`}
-                    aria-selected={isActive}
-                    className={isActive ? 'strategy-tab active' : 'strategy-tab'}
-                    key={setup.id}
-                    onClick={() => setActiveSetupId(setup.id)}
-                  >
-                    <span>#{setup.rank}</span>
-                    {setup.title}
-                  </button>
-                )
-              })}
-            </div>
-          </aside>
-
-          <StrategyDetail setup={activeSetup} />
-        </div>
-      </section>
-
-      <section className="panel roadmap" id="scanner-roadmap">
-        <div className="section-heading">
-          <span className="eyebrow">Later version</span>
-          <h2>Scanner build path</h2>
-          <p>{strategyFramework.scannerVision}</p>
-        </div>
-        <div className="roadmap-grid">
-          <article>
-            <h3>Phase 1 · Strategy library</h3>
-            <p>Define human-readable strategies, chart rules, entry triggers, and invalidation logic.</p>
-          </article>
-          <article>
-            <h3>Phase 2 · Deterministic signals</h3>
-            <p>Translate each strategy into indicator predicates: EMA/SMA state, Bollinger events, RSI, candles, support distance.</p>
-          </article>
-          <article>
-            <h3>Phase 3 · Options layer</h3>
-            <p>Attach expiry selection, delta bands, liquidity filters, bid/ask spread checks, and debit/credit risk templates.</p>
-          </article>
-        </div>
-        <div className="score-card">
-          <h3>Starting quality score</h3>
-          <div className="score-list">
-            {qualityScoreRules.map((rule) => (
-              <span key={rule}>{rule}</span>
-            ))}
-          </div>
-        </div>
-      </section>
+    <main className="app-shell">
+      <SideNav activePage={activePage} onSelectPage={setActivePage} />
+      <div className="content-shell">
+        {activePage === 'overview' ? <OverviewPage onSelectPage={setActivePage} /> : null}
+        {activePage === 'rules' ? <RulesPage /> : null}
+        {activePage === 'strategies' ? (
+          <StrategiesPage sortedSetups={sortedSetups} activeSetup={activeSetup} onSelectSetup={setActiveSetupId} />
+        ) : null}
+        {activePage === 'roadmap' ? <RoadmapPage /> : null}
+      </div>
     </main>
   )
 }
