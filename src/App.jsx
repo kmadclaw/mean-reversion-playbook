@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { LIQUID_OPTIONS_UNIVERSE } from './liquidUniverse'
 import { fetchSymbolSnapshot, fetchUniverseSnapshots, scanStrategy } from './scannerEngine'
@@ -307,32 +307,12 @@ function UniversePage() {
                 const rowSnapshot = universeSnapshots[stock.symbol] ?? makeFallbackSnapshot(stock.symbol)
                 const isActive = stock.symbol === selectedSymbol
                 return (
-                  <Fragment key={stock.symbol}>
-                    <tr className={isActive ? 'active' : undefined} key={stock.symbol}>
-                      <th scope="row" className="symbol-cell">
-                        <div className="mobile-row-title">
-                          <button
-                            type="button"
-                            className="universe-symbol-button"
-                            onClick={() => {
-                              setSelectedSymbol(stock.symbol)
-                              setSelectedRange('3mo')
-                            }}
-                            aria-label={`Select ${stock.symbol}`}
-                          >
-                            {stock.symbol}
-                          </button>
-                          <div className="mobile-row-name">
-                            <small>{stock.name}</small>
-                          </div>
-                          <div className="mobile-row-chips">
-                            <span>{formatCurrency(rowSnapshot.price)}</span>
-                            <span>RSI {rowSnapshot.rsi14}</span>
-                          </div>
-                        </div>
+                  <tr className={isActive ? 'active' : undefined} key={stock.symbol}>
+                    <th scope="row" className="symbol-cell">
+                      <div className="mobile-row-title">
                         <button
                           type="button"
-                          className="universe-symbol-button desktop-symbol"
+                          className="universe-symbol-button"
                           onClick={() => {
                             setSelectedSymbol(stock.symbol)
                             setSelectedRange('3mo')
@@ -341,34 +321,48 @@ function UniversePage() {
                         >
                           {stock.symbol}
                         </button>
-                      </th>
-                      <td className="group-cell" data-label="Group">{stock.group}</td>
-                      <td className="current-cell" data-label="Current">{formatCurrency(rowSnapshot.price)}</td>
-                      <td className="rsi-cell" data-label="RSI14">{rowSnapshot.rsi14}</td>
-                      <td data-label="8 EMA">{formatCurrency(rowSnapshot.ema8)}</td>
-                      <td data-label="20 EMA">{formatCurrency(rowSnapshot.ema20)}</td>
-                      <td data-label="50 EMA">{formatCurrency(rowSnapshot.ema50)}</td>
-                      <td data-label="50 SMA">{formatCurrency(rowSnapshot.sma50)}</td>
-                      <td data-label="52W range"><PriceRangeBar low={rowSnapshot.week52Low} high={rowSnapshot.week52High} price={rowSnapshot.price} /></td>
-                    </tr>
-                    {isActive ? (
-                      <tr className="universe-inline-chart-row" key={`${stock.symbol}-mobile-chart`}>
-                        <td colSpan="9">
-                          <ChartPanel
-                            className="mobile-inline-chart"
-                            ariaLabel={`Inline price chart for ${selectedSymbol}`}
-                            selectedStock={selectedStock}
-                            selectedSymbol={selectedSymbol}
-                            snapshot={snapshot}
-                            visiblePoints={visiblePoints}
-                            ranges={ranges}
-                            selectedRange={selectedRange}
-                            onSelectRange={setSelectedRange}
-                          />
-                        </td>
-                      </tr>
-                    ) : null}
-                  </Fragment>
+                        <div className="mobile-row-name">
+                          <small>{stock.name}</small>
+                        </div>
+                        <div className="mobile-row-chips">
+                          <span>{formatCurrency(rowSnapshot.price)}</span>
+                          <span>RSI {rowSnapshot.rsi14}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="universe-symbol-button desktop-symbol"
+                        onClick={() => {
+                          setSelectedSymbol(stock.symbol)
+                          setSelectedRange('3mo')
+                        }}
+                        aria-label={`Select ${stock.symbol}`}
+                      >
+                        {stock.symbol}
+                      </button>
+                      {isActive ? (
+                        <ChartPanel
+                          className="mobile-card-chart"
+                          ariaLabel={`Inline price chart for ${selectedSymbol}`}
+                          selectedStock={selectedStock}
+                          selectedSymbol={selectedSymbol}
+                          snapshot={snapshot}
+                          visiblePoints={visiblePoints}
+                          ranges={ranges}
+                          selectedRange={selectedRange}
+                          onSelectRange={setSelectedRange}
+                        />
+                      ) : null}
+                    </th>
+                    <td className="group-cell" data-label="Group">{stock.group}</td>
+                    <td className="current-cell" data-label="Current">{formatCurrency(rowSnapshot.price)}</td>
+                    <td className="rsi-cell" data-label="RSI14">{rowSnapshot.rsi14}</td>
+                    <td data-label="8 EMA">{formatCurrency(rowSnapshot.ema8)}</td>
+                    <td data-label="20 EMA">{formatCurrency(rowSnapshot.ema20)}</td>
+                    <td data-label="50 EMA">{formatCurrency(rowSnapshot.ema50)}</td>
+                    <td data-label="50 SMA">{formatCurrency(rowSnapshot.sma50)}</td>
+                    <td data-label="52W range"><PriceRangeBar low={rowSnapshot.week52Low} high={rowSnapshot.week52High} price={rowSnapshot.price} /></td>
+                  </tr>
                 )
               })}
             </tbody>
