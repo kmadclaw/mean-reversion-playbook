@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './App.css'
 import { bullishSetups, processRules, qualityScoreRules, strategyFramework } from './strategies'
 
@@ -11,40 +12,44 @@ function RuleList({ items }) {
   )
 }
 
-function SetupCard({ setup }) {
+function DetailGroup({ title, items }) {
   return (
-    <article className="setup-card" id={setup.id}>
-      <div className="setup-card__topline">
-        <span className="rank">#{setup.rank}</span>
-        <span className="label">{setup.label}</span>
+    <section className="detail-group">
+      <h4>{title}</h4>
+      <RuleList items={items} />
+    </section>
+  )
+}
+
+function StrategyDetail({ setup }) {
+  return (
+    <article className="strategy-detail" role="tabpanel" id={`${setup.id}-panel`} aria-labelledby={`${setup.id}-tab`}>
+      <div className="detail-hero">
+        <div>
+          <div className="setup-card__topline">
+            <span className="rank">#{setup.rank}</span>
+            <span className="label">{setup.label}</span>
+          </div>
+          <h3>{setup.title}</h3>
+          <p className="summary">{setup.summary}</p>
+        </div>
+        <div className="future-actions" aria-label="Future tools">
+          <button type="button" disabled aria-label="Scanner coming soon">
+            Scanner coming soon
+          </button>
+          <button type="button" disabled aria-label="Backtest coming soon">
+            Backtest coming soon
+          </button>
+        </div>
       </div>
-      <h3>{setup.title}</h3>
-      <p className="summary">{setup.summary}</p>
+
       <div className="rule-grid compact">
-        <section>
-          <h4>Pattern</h4>
-          <RuleList items={setup.pattern} />
-        </section>
-        <section>
-          <h4>Entry triggers</h4>
-          <RuleList items={setup.entryTriggers} />
-        </section>
-        <section>
-          <h4>Options expression</h4>
-          <RuleList items={setup.optionStructures} />
-        </section>
-        <section>
-          <h4>Targets</h4>
-          <RuleList items={setup.targets} />
-        </section>
-        <section>
-          <h4>Invalidation</h4>
-          <RuleList items={setup.invalidation} />
-        </section>
-        <section>
-          <h4>Future scanner seeds</h4>
-          <RuleList items={setup.scannerSeeds} />
-        </section>
+        <DetailGroup title="Pattern" items={setup.pattern} />
+        <DetailGroup title="Entry triggers" items={setup.entryTriggers} />
+        <DetailGroup title="Options expression" items={setup.optionStructures} />
+        <DetailGroup title="Targets" items={setup.targets} />
+        <DetailGroup title="Invalidation" items={setup.invalidation} />
+        <DetailGroup title="Future scanner seeds" items={setup.scannerSeeds} />
       </div>
     </article>
   )
@@ -52,23 +57,25 @@ function SetupCard({ setup }) {
 
 function App() {
   const sortedSetups = [...bullishSetups].sort((a, b) => a.rank - b.rank)
+  const [activeSetupId, setActiveSetupId] = useState(sortedSetups[0].id)
+  const activeSetup = sortedSetups.find((setup) => setup.id === activeSetupId) ?? sortedSetups[0]
 
   return (
     <main>
       <nav className="top-nav" aria-label="Strategy navigation">
         <a href="#framework">Framework</a>
         <a href="#rules">Rules</a>
-        <a href="#setups">Setups</a>
-        <a href="#scanner-roadmap">Scanner roadmap</a>
+        <a href="#strategies">Strategies</a>
+        <a href="#scanner-roadmap">Roadmap</a>
       </nav>
 
       <section className="hero" id="framework">
-        <div className="eyebrow">Trading strategy library · v0.1</div>
+        <div className="eyebrow">Trading strategy library · v0.2</div>
         <h1>{strategyFramework.name}</h1>
         <p className="lede">{strategyFramework.premise}</p>
         <div className="hero-actions">
-          <a className="button primary" href="#setups">Review bullish setups</a>
-          <a className="button secondary" href="#scanner-roadmap">Scanner roadmap</a>
+          <a className="button primary" href="#strategies">Select a strategy</a>
+          <a className="button secondary" href="#scanner-roadmap">Future scanners</a>
         </div>
         <div className="metric-strip" aria-label="Strategy framework summary">
           <div>
@@ -95,8 +102,8 @@ function App() {
           <span className="eyebrow">Execution mechanics</span>
           <h2>Core rules before any setup qualifies</h2>
           <p>
-            The scanner version should separate setup conditions from entry triggers. Oversold creates a candidate;
-            confirmation creates the trade.
+            Oversold creates a candidate. Confirmation creates the trade. Keep the rules simple enough to become
+            scanner predicates later.
           </p>
         </div>
         <div className="process-grid">
@@ -109,19 +116,41 @@ function App() {
         </div>
       </section>
 
-      <section className="panel alt" id="setups">
+      <section className="panel alt strategy-workspace" id="strategies">
         <div className="section-heading">
-          <span className="eyebrow">Bullish setup catalog</span>
-          <h2>Eight pullback patterns to turn into scanner modules</h2>
+          <span className="eyebrow">Strategy selector</span>
+          <h2>Pick one setup, read one clean strategy page</h2>
           <p>
-            Ranked by setup quality. Each card has chart conditions, entry confirmation, options expression,
-            target, invalidation, and initial scanner fields.
+            Tabs keep the UX simple and accessible. Scanner and backtest actions are visible but disabled to signal
+            planned future versions.
           </p>
         </div>
-        <div className="setup-grid">
-          {sortedSetups.map((setup) => (
-            <SetupCard key={setup.id} setup={setup} />
-          ))}
+
+        <div className="strategy-shell">
+          <aside className="strategy-tabs" aria-label="Bullish setup types">
+            <div role="tablist" aria-orientation="vertical">
+              {sortedSetups.map((setup) => {
+                const isActive = setup.id === activeSetup.id
+                return (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`${setup.id}-tab`}
+                    aria-controls={`${setup.id}-panel`}
+                    aria-selected={isActive}
+                    className={isActive ? 'strategy-tab active' : 'strategy-tab'}
+                    key={setup.id}
+                    onClick={() => setActiveSetupId(setup.id)}
+                  >
+                    <span>#{setup.rank}</span>
+                    {setup.title}
+                  </button>
+                )
+              })}
+            </div>
+          </aside>
+
+          <StrategyDetail setup={activeSetup} />
         </div>
       </section>
 

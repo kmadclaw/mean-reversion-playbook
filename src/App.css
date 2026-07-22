@@ -1,7 +1,7 @@
 main {
-  width: min(1200px, calc(100% - 32px));
+  width: min(1160px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 72px;
+  padding: 24px 0 72px;
 }
 
 .top-nav {
@@ -9,17 +9,16 @@ main {
   top: 14px;
   z-index: 10;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  align-items: center;
   width: fit-content;
   max-width: 100%;
-  margin: 0 auto 40px;
-  padding: 8px;
+  margin: 0 auto 28px;
+  padding: 7px;
   border: 1px solid rgba(22, 35, 46, 0.12);
   border-radius: 999px;
-  background: rgba(255, 254, 249, 0.84);
-  box-shadow: 0 18px 70px rgba(18, 50, 74, 0.12);
+  background: rgba(255, 254, 249, 0.9);
+  box-shadow: 0 14px 48px rgba(18, 50, 74, 0.1);
   backdrop-filter: blur(16px);
   overflow-x: auto;
 }
@@ -28,11 +27,11 @@ main {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 15px;
   border-radius: 999px;
   color: #4a5a65;
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 750;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -45,22 +44,24 @@ main {
   outline-offset: 2px;
 }
 
-.hero {
-  min-height: 70vh;
-  display: grid;
-  align-content: center;
-  padding: clamp(40px, 8vw, 96px);
+.hero,
+.panel {
   border: 1px solid rgba(22, 35, 46, 0.12);
-  border-radius: 36px;
+  border-radius: 28px;
+  background: rgba(255, 254, 249, 0.78);
+  box-shadow: 0 28px 80px rgba(18, 50, 74, 0.12);
+}
+
+.hero {
+  padding: clamp(32px, 7vw, 72px);
   background:
-    linear-gradient(135deg, rgba(255, 254, 249, 0.92), rgba(255, 247, 235, 0.88)),
-    linear-gradient(135deg, #174a6a, #ff6600);
-  box-shadow: 0 32px 100px rgba(18, 50, 74, 0.15);
+    radial-gradient(circle at 92% 10%, rgba(255, 102, 0, 0.12), transparent 20rem),
+    linear-gradient(135deg, rgba(255, 254, 249, 0.95), rgba(255, 247, 235, 0.9));
 }
 
 .eyebrow {
-  margin-bottom: 16px;
-  color: #d95600;
+  margin-bottom: 14px;
+  color: #b54800;
   font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 0.78rem;
   font-weight: 800;
@@ -77,18 +78,18 @@ p {
 }
 
 h1 {
-  max-width: 900px;
+  max-width: 840px;
   margin-bottom: 18px;
   color: #12324a;
-  font-size: clamp(3rem, 8vw, 6.8rem);
-  line-height: 0.9;
-  letter-spacing: -0.075em;
+  font-size: clamp(2.7rem, 7vw, 5.7rem);
+  line-height: 0.94;
+  letter-spacing: -0.07em;
 }
 
 .lede {
-  max-width: 760px;
+  max-width: 740px;
   color: #344a59;
-  font-size: clamp(1.12rem, 2vw, 1.45rem);
+  font-size: clamp(1.05rem, 2vw, 1.32rem);
   line-height: 1.55;
 }
 
@@ -96,7 +97,7 @@ h1 {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin: 26px 0 34px;
+  margin: 24px 0 30px;
 }
 
 .button {
@@ -129,17 +130,16 @@ h1 {
 
 .metric-strip div,
 .process-card,
-.setup-card,
+.strategy-detail,
 .roadmap-grid article,
 .score-card {
   border: 1px solid rgba(22, 35, 46, 0.12);
-  border-radius: 24px;
-  background: rgba(255, 254, 249, 0.78);
-  box-shadow: 0 18px 60px rgba(18, 50, 74, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 254, 249, 0.9);
 }
 
 .metric-strip div {
-  padding: 18px;
+  padding: 16px;
 }
 
 .metric-strip span {
@@ -156,31 +156,29 @@ h1 {
 .metric-strip strong {
   display: block;
   color: #12324a;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   line-height: 1.35;
 }
 
 .panel {
-  margin-top: 28px;
-  padding: clamp(28px, 5vw, 56px);
-  border: 1px solid rgba(22, 35, 46, 0.12);
-  border-radius: 36px;
-  background: rgba(255, 254, 249, 0.72);
+  margin-top: 24px;
+  padding: clamp(24px, 4vw, 44px);
 }
 
 .panel.alt {
-  background: rgba(244, 240, 231, 0.7);
+  background: rgba(244, 240, 231, 0.72);
 }
 
 .section-heading {
   max-width: 760px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .section-heading h2 {
+  margin-bottom: 12px;
   color: #12324a;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 1;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.02;
   letter-spacing: -0.055em;
 }
 
@@ -194,15 +192,15 @@ h1 {
 .process-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 .process-card {
-  padding: 22px;
+  padding: 20px;
 }
 
 .process-card h3,
-.setup-card h3,
+.strategy-detail h3,
 .roadmap-grid h3,
 .score-card h3 {
   color: #12324a;
@@ -215,25 +213,88 @@ ul {
 }
 
 li {
-  margin-bottom: 0.48rem;
+  margin-bottom: 0.46rem;
   color: #344a59;
   line-height: 1.45;
 }
 
-.setup-grid {
+.strategy-shell {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(220px, 300px) 1fr;
   gap: 18px;
+  align-items: start;
 }
 
-.setup-card {
+.strategy-tabs {
+  position: sticky;
+  top: 94px;
+}
+
+.strategy-tabs [role='tablist'] {
+  display: grid;
+  gap: 8px;
+}
+
+.strategy-tab {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(22, 35, 46, 0.12);
+  border-radius: 16px;
+  color: #344a59;
+  background: rgba(255, 254, 249, 0.82);
+  font: inherit;
+  font-weight: 760;
+  text-align: left;
+  cursor: pointer;
+}
+
+.strategy-tab span {
+  color: #b54800;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.78rem;
+}
+
+.strategy-tab.active,
+.strategy-tab:hover,
+.strategy-tab:focus-visible {
+  color: #fffef9;
+  background: #174a6a;
+  outline: 2px solid transparent;
+}
+
+.strategy-tab.active span,
+.strategy-tab:hover span,
+.strategy-tab:focus-visible span {
+  color: #ffcfad;
+}
+
+.strategy-tab:focus-visible {
+  outline: 2px solid #ff6600;
+  outline-offset: 2px;
+}
+
+.strategy-detail {
   padding: clamp(22px, 4vw, 34px);
+  box-shadow: 0 18px 54px rgba(18, 50, 74, 0.08);
+}
+
+.detail-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 20px;
 }
 
 .setup-card__topline {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
   margin-bottom: 12px;
 }
 
@@ -259,43 +320,62 @@ li {
   background: rgba(255, 102, 0, 0.11);
 }
 
-.setup-card h3 {
+.strategy-detail h3 {
   margin-bottom: 10px;
-  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  font-size: clamp(1.65rem, 3vw, 2.55rem);
+}
+
+.future-actions {
+  display: grid;
+  gap: 10px;
+  min-width: 190px;
+}
+
+.future-actions button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px dashed rgba(52, 74, 89, 0.45);
+  border-radius: 999px;
+  color: #6a7882;
+  background: #e8e5de;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 
 .rule-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
-.rule-grid section {
+.detail-group {
   padding: 18px;
-  border-radius: 18px;
+  border-radius: 16px;
   background: #fffef9;
   border: 1px solid rgba(22, 35, 46, 0.1);
 }
 
-.rule-grid h4 {
+.detail-group h4 {
   margin-bottom: 10px;
   color: #174a6a;
-  font-size: 0.88rem;
-  letter-spacing: 0.02em;
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
 .roadmap-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .roadmap-grid article,
 .score-card {
-  padding: 22px;
+  padding: 20px;
 }
 
 .score-list {
@@ -314,37 +394,52 @@ li {
   font-weight: 700;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 960px) {
   .metric-strip,
   .process-grid,
-  .rule-grid,
-  .roadmap-grid {
+  .roadmap-grid,
+  .strategy-shell,
+  .detail-hero,
+  .rule-grid {
     grid-template-columns: 1fr;
   }
 
-  .hero {
-    min-height: auto;
+  .strategy-tabs {
+    position: static;
+  }
+
+  .strategy-tabs [role='tablist'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .future-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 620px) {
   main {
-    width: min(100% - 24px, 1200px);
+    width: min(100% - 24px, 1160px);
     padding-top: 12px;
   }
 
   .top-nav {
     justify-content: flex-start;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .hero,
   .panel {
-    border-radius: 24px;
+    border-radius: 22px;
   }
 
   h1 {
-    font-size: 3.2rem;
+    font-size: 3.05rem;
+  }
+
+  .strategy-tabs [role='tablist'],
+  .future-actions {
+    grid-template-columns: 1fr;
   }
 }
