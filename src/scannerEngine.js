@@ -90,7 +90,7 @@ function scoreLiveForStrategy(strategyId, metrics) {
   return { score, reasons }
 }
 
-function toRecommendation(strategyId, metrics, score, reasons, warningPrefix = 'Live app market-data API') {
+function toRecommendation(strategyId, metrics, score, reasons) {
   const { expiry, dte } = firstFriday28To42Dte()
   return {
     symbol: metrics.symbol,
@@ -105,7 +105,7 @@ function toRecommendation(strategyId, metrics, score, reasons, warningPrefix = '
     invalidation: Number(Math.min(metrics.sma50, metrics.close * 0.94).toFixed(2)),
     rsi14: Number(metrics.rsi14.toFixed(1)),
     reasoning: reasons.join(' | '),
-    warnings: `${warningPrefix} uses daily candles and strategy predicates; exact options strikes are not selected yet.`,
+    warnings: '',
     strategyFit: strategyFitById[strategyId],
   }
 }
@@ -143,8 +143,7 @@ function fallbackRecommendations(strategyId, universe = DEFAULT_UNIVERSE) {
     .sort((a, b) => b.score - a.score)
 
   const recommendations = scored
-    .slice(0, 12)
-    .map((candidate) => toRecommendation(strategyId, candidate.metrics, candidate.score, candidate.reasons, 'Snapshot fallback'))
+    .map((candidate) => toRecommendation(strategyId, candidate.metrics, candidate.score, candidate.reasons))
 
   return {
     strategyId,
@@ -228,7 +227,6 @@ export async function scanStrategy(strategyId, universe = DEFAULT_UNIVERSE) {
 
     const recommendations = scoredCandidates
       .sort((a, b) => b.score - a.score)
-      .slice(0, 12)
       .map((candidate) => toRecommendation(strategyId, candidate.metrics, candidate.score, candidate.reasons))
 
     if (!recommendations.length) return fallbackRecommendations(strategyId, universe)
