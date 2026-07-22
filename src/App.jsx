@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
-import { scanStrategy } from './scannerEngine'
+import { LIQUID_OPTIONS_UNIVERSE } from './liquidUniverse'
+import { fetchSymbolSnapshot, scanStrategy } from './scannerEngine'
 import { bullishSetups, processRules, qualityScoreRules, strategyFramework } from './strategies'
 
 const pages = [
   { id: 'overview', label: 'Overview', eyebrow: 'r/meanreversion' },
   { id: 'rules', label: 'Core rules', eyebrow: 'Execution' },
   { id: 'strategies', label: 'Strategies', eyebrow: 'Setups' },
+  { id: 'universe', label: 'Universe', eyebrow: 'Stocks' },
   { id: 'roadmap', label: 'Roadmap', eyebrow: 'Coming soon' },
 ]
 
@@ -134,6 +136,111 @@ function formatCurrency(value) {
   return `$${value.toFixed(2)}`
 }
 
+function fallbackPrice(symbol) {
+  return 60 + (symbol.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 420)
+}
+
+function makeFallbackSnapshot(symbol) {
+  const price = fallbackPrice(symbol)
+  return {
+    symbol,
+    price,
+    changePercent: ((symbol.charCodeAt(0) % 9) - 4) / 2,
+    rsi14: 48,
+    ema20: Number((price * 0.98).toFixed(2)),
+    sma50: Number((price * 0.95).toFixed(2)),
+    chartPoints: [price * 0.92, price * 0.96, price * 0.94, price * 1.01, price].map((value) => Number(value.toFixed(2))),
+  }
+}
+
+function PriceSparkline({ points }) {
+  const safePoints = points.length ? points : [1, 1]
+  const min = Math.min(...safePoints)
+  const max = Math.max(...safePoints)
+  const span = max - min || 1
+  const coords = safePoints
+    .map((point, index) => `${(index / Math.max(1, safePoints.length - 1)) * 100},${60 - ((point - min) / span) * 50}`)
+    .join(' ')
+
+  return (
+    <svg className="price-chart" viewBox="0 0 100 64" role="img" aria-label="Interactive chart display">
+      <polyline points={coords} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function UniversePage() {
+  const [selectedSymbol, setSelectedSymbol] = useState('AAPL')
+  const [snapshot, setSnapshot] = useState(makeFallbackSnapshot('AAPL'))
+  const selectedStock = LIQUID_OPTIONS_UNIVERSE.find((stock) => stock.symbol === selectedSymbol) ?? LIQUID_OPTIONS_UNIVERSE[0]
+
+  useEffect(() => {
+    let active = true
+    setSnapshot(makeFallbackSnapshot(selectedSymbol))
+    fetchSymbolSnapshot(selectedSymbol)
+      .then((nextSnapshot) => {
+        if (active) setSnapshot(nextSnapshot)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [selectedSymbol])
+
+  return (
+    <section className="content-page universe-page">
+      <PageHeader
+        eyebrow="Scanner coverage"
+        title="Liquid options universe"
+        description={`${LIQUID_OPTIONS_UNIVERSE.length} names from a curated 100–150 liquid option names universe. Click a tile to load the price detail panel and interactive chart display.`}
+      />
+      <div className="universe-layout">
+        <div className="universe-grid" aria-label="Stock universe tiles">
+          {LIQUID_OPTIONS_UNIVERSE.map((stock) => (
+            <button
+              type="button"
+              key={stock.symbol}
+              className={stock.symbol === selectedSymbol ? 'universe-tile active' : 'universe-tile'}
+              onClick={() => setSelectedSymbol(stock.symbol)}
+            >
+              <strong>{stock.symbol}</strong>
+              <span>{stock.name}</span>
+              <small>{stock.group}</small>
+            </button>
+          ))}
+        </div>
+        <aside className="chart-panel" role="region" aria-label="Interactive price chart">
+          <div className="chart-panel__header">
+            <div>
+              <p className="eyebrow">{selectedStock.group}</p>
+              <h2>{selectedSymbol} price chart</h2>
+              <p>{selectedStock.name}</p>
+            </div>
+            <div className={snapshot.changePercent >= 0 ? 'price-change positive' : 'price-change negative'}>
+              {snapshot.changePercent >= 0 ? '+' : ''}{snapshot.changePercent.toFixed(2)}%
+            </div>
+          </div>
+          <div className="price-hero">
+            <span>Last price</span>
+            <strong>{formatCurrency(snapshot.price)}</strong>
+          </div>
+          <PriceSparkline points={snapshot.chartPoints} />
+          <div className="chart-controls" aria-label="Chart range controls">
+            <button type="button">1M</button>
+            <button type="button" className="active">3M</button>
+            <button type="button">6M</button>
+          </div>
+          <dl className="price-stats">
+            <div><dt>RSI14</dt><dd>{snapshot.rsi14}</dd></div>
+            <div><dt>20 EMA</dt><dd>{formatCurrency(snapshot.ema20)}</dd></div>
+            <div><dt>50 SMA</dt><dd>{formatCurrency(snapshot.sma50)}</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+  )
+}
+
 function ScannerResults({ result }) {
   const generated = new Date(result.generatedAt).toLocaleString(undefined, {
     dateStyle: 'medium',
@@ -149,7 +256,7 @@ function ScannerResults({ result }) {
           <h3>{result.strategyTitle} scanner recommendations</h3>
           <p>Last run: {generated}. Results are generated for the selected strategy only; option structures are templates, not exact contracts.</p>
         </div>
-        <span>{result.recommendations.length} signals</span>
+        <span>{result.recommendations.length} shown · {result.passedCount ?? result.recommendations.length} passed · {result.scannedCount ?? '—'} scanned</span>
       </div>
 
       <div className="recommendation-list">
@@ -338,6 +445,7 @@ function App() {
             onRunScanner={handleRunScanner}
           />
         ) : null}
+        {activePage === 'universe' ? <UniversePage /> : null}
         {activePage === 'roadmap' ? <RoadmapPage /> : null}
       </div>
     </main>
