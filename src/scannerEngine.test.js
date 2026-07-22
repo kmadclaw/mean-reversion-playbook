@@ -1,23 +1,25 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fetchSymbolSnapshot, scanStrategy } from './scannerEngine'
 
-function makeApiSymbol(symbol, closes) {
+function makeApiSymbol(symbol, closes, overrides = {}) {
+  const close = closes.at(-1)
   return {
     symbol,
-    close: closes.at(-1),
+    close,
     previousClose: closes.at(-2),
-    dayHigh: closes.at(-1) + 2,
-    dayLow: closes.at(-1) - 2,
+    dayHigh: close + 2,
+    dayLow: close - 2,
     week52High: Math.max(...closes) + 4,
     week52Low: Math.min(...closes) - 4,
-    ema8: closes.at(-1) - 1,
-    ema20: closes.at(-1) + 1,
-    sma20: closes.at(-1),
-    sma50: closes.at(-1) - 2,
-    bbLower: closes.at(-1) - 5,
-    bbUpper: closes.at(-1) + 5,
+    ema8: close - 1,
+    ema20: close + 1,
+    sma20: close,
+    sma50: close - 2,
+    bbLower: close - 5,
+    bbUpper: close + 5,
     rsi14: 39,
-    chartPoints: closes.slice(-65).map((close, index) => ({ date: `d${index}`, close, high: close + 1, low: close - 1 })),
+    chartPoints: closes.slice(-65).map((itemClose, index) => ({ date: `d${index}`, close: itemClose, high: itemClose + 1, low: itemClose - 1 })),
+    ...overrides,
   }
 }
 
@@ -64,6 +66,32 @@ describe('strategy-specific scanner engine', () => {
     expect(result.scannedCount).toBe(1)
     expect(result.recommendations[0].symbol).toBe('MOCK')
     expect(result.recommendations[0].strategyFit).toMatch(/20 EMA/i)
+  })
+
+  it('ranks the same scanned universe differently for each strategy predicate', async () => {
+    const closes = Array.from({ length: 90 }, () => 100)
+    const symbols = {
+      EMA: makeApiSymbol('EMA', closes, { close: 100, previousClose: 99, ema8: 98, ema20: 100.5, sma20: 101, sma50: 82, bbLower: 80, rsi14: 41 }),
+      SMA: makeApiSymbol('SMA', closes, { close: 100, previousClose: 99, ema8: 96, ema20: 112, sma20: 106, sma50: 100.5, bbLower: 80, rsi14: 41 }),
+      BBL: makeApiSymbol('BBL', closes, { close: 100, previousClose: 99, ema8: 96, ema20: 115, sma20: 106, sma50: 88, bbLower: 99, rsi14: 39 }),
+      RSI: makeApiSymbol('RSI', closes, { close: 100, previousClose: 98, ema8: 94, ema20: 115, sma20: 105, sma50: 84, bbLower: 82, rsi14: 25 }),
+      RCL: makeApiSymbol('RCL', closes, { close: 100, previousClose: 96, ema8: 98, ema20: 96, sma20: 97, sma50: 93, bbLower: 90, rsi14: 47 }),
+    }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ symbols }) }))
+
+    const universe = Object.keys(symbols)
+    const ema = await scanStrategy('ema20-pullback-bounce', universe)
+    const sma = await scanStrategy('sma50-defense', universe)
+    const bb = await scanStrategy('lower-bollinger-reentry', universe)
+    const rsi = await scanStrategy('rsi-oversold-reversal', universe)
+    const reclaim = await scanStrategy('ema8-reclaim-after-pullback', universe)
+
+    expect(ema.recommendations[0].symbol).toBe('EMA')
+    expect(sma.recommendations[0].symbol).toBe('SMA')
+    expect(bb.recommendations[0].symbol).toBe('BBL')
+    expect(rsi.recommendations[0].symbol).toBe('RSI')
+    expect(reclaim.recommendations[0].symbol).toBe('RCL')
+    expect(new Set([ema, sma, bb, rsi, reclaim].map((result) => result.recommendations[0].symbol)).size).toBe(5)
   })
 
   it('returns real range fields and multi-point chart data for universe tiles', async () => {

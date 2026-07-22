@@ -29,66 +29,62 @@ function firstFriday28To42Dte(now = new Date()) {
   return { expiry: '', dte: 0 }
 }
 
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value))
+}
+
+function proximityScore(distance, maxDistance) {
+  return clamp01(1 - Math.abs(distance) / maxDistance)
+}
+
 function scoreLiveForStrategy(strategyId, metrics) {
   const distanceToEma20 = (metrics.close - metrics.ema20) / metrics.ema20
   const distanceToSma50 = (metrics.close - metrics.sma50) / metrics.sma50
-  const lowerBandStretch = (metrics.close - metrics.bbLower) / metrics.close
+  const lowerBandDistance = (metrics.close - metrics.bbLower) / metrics.close
   const trendUp = metrics.ema20 >= metrics.sma50 * 0.98
-  let score = 0
+  const rsiWashedOut = clamp01((50 - metrics.rsi14) / 25)
+  let score = trendUp ? 0.7 : 0
   const reasons = []
 
-  if (trendUp) {
-    score += 1.5
-    reasons.push('20 EMA / 50 SMA trend structure is intact or close to reclaim')
-  }
-  if (metrics.rsi14 <= 45) {
-    score += metrics.rsi14 <= 35 ? 2 : 1
-    reasons.push(`RSI washed out at ${metrics.rsi14.toFixed(1)}`)
-  }
+  if (trendUp) reasons.push('20 EMA / 50 SMA trend structure is intact or close to reclaim')
+  if (metrics.rsi14 <= 45) reasons.push(`RSI washed out at ${metrics.rsi14.toFixed(1)}`)
 
   if (strategyId === 'ema20-pullback-bounce') {
-    if (Math.abs(distanceToEma20) <= 0.08) {
-      score += 3
-      reasons.push('Price is close to the 20 EMA pullback zone')
-    }
+    const proximity = proximityScore(distanceToEma20, 0.08)
+    score += proximity * 6 + rsiWashedOut * 1.5
+    if (proximity > 0.25) reasons.push('Price is close to the 20 EMA pullback zone')
   } else if (strategyId === 'sma50-defense') {
-    if (Math.abs(distanceToSma50) <= 0.1) {
-      score += 3
-      reasons.push('Price is close to the 50 SMA defense zone')
-    }
+    const proximity = proximityScore(distanceToSma50, 0.09)
+    score += proximity * 6.5 + rsiWashedOut
+    if (proximity > 0.25) reasons.push('Price is close to the 50 SMA defense zone')
   } else if (strategyId === 'lower-bollinger-reentry') {
-    if (lowerBandStretch <= 0.04) {
-      score += 3
-      reasons.push('Price is stretched toward the lower Bollinger Band')
-    }
+    const bandProximity = proximityScore(lowerBandDistance, 0.05)
+    const underOrReentering = metrics.close <= metrics.bbLower * 1.04 ? 1.5 : 0
+    score += bandProximity * 6 + underOrReentering + rsiWashedOut
+    if (bandProximity > 0.2) reasons.push('Price is stretched toward the lower Bollinger Band')
   } else if (strategyId === 'rsi-oversold-reversal') {
-    if (metrics.rsi14 <= 42) {
-      score += 3
-      reasons.push('RSI is oversold/washed out for a reversal scan')
-    }
+    const rsiScore = clamp01((45 - metrics.rsi14) / 20)
+    score += rsiScore * 7 + Math.max(0, 1 - lowerBandDistance / 0.12)
+    if (metrics.rsi14 <= 42) reasons.push('RSI is oversold/washed out for a reversal scan')
   } else if (strategyId === 'ema20-sma50-mean-zone') {
-    if (metrics.close <= metrics.ema20 && metrics.close >= metrics.sma50 * 0.92) {
-      score += 3
-      reasons.push('Price is inside the 20 EMA to 50 SMA mean zone')
-    }
+    const insideMeanZone = metrics.close <= metrics.ema20 && metrics.close >= metrics.sma50 * 0.92
+    const zonePosition = insideMeanZone ? 6 : Math.max(proximityScore(distanceToEma20, 0.1), proximityScore(distanceToSma50, 0.1)) * 2
+    score += zonePosition + rsiWashedOut
+    if (insideMeanZone) reasons.push('Price is inside the 20 EMA to 50 SMA mean zone')
   } else if (strategyId === 'ema8-reclaim-after-pullback') {
-    if (metrics.close >= metrics.ema8 && metrics.previousClose < metrics.ema8) {
-      score += 3
-      reasons.push('Price reclaimed EMA8 after the pullback')
-    } else if (metrics.close >= metrics.ema8) {
-      score += 1.5
-      reasons.push('Price is above EMA8; watch for reclaim continuation')
-    }
+    const reclaimed = metrics.close >= metrics.ema8 && metrics.previousClose < metrics.ema8
+    const nearEma8 = proximityScore((metrics.close - metrics.ema8) / metrics.ema8, 0.06)
+    score += (reclaimed ? 7 : nearEma8 * 2.5) + (trendUp ? 1 : 0)
+    if (reclaimed) reasons.push('Price reclaimed EMA8 after the pullback')
+    else if (metrics.close >= metrics.ema8) reasons.push('Price is above EMA8; watch for reclaim continuation')
   } else if (strategyId === 'prior-support-breakout-retest') {
-    if (Math.abs(distanceToEma20) <= 0.1 || Math.abs(distanceToSma50) <= 0.1) {
-      score += 2.5
-      reasons.push('Price is near dynamic support for a retest-style setup')
-    }
+    const supportProximity = Math.max(proximityScore(distanceToEma20, 0.1), proximityScore(distanceToSma50, 0.1))
+    score += supportProximity * 5.5 + (trendUp ? 1 : 0) + rsiWashedOut
+    if (supportProximity > 0.25) reasons.push('Price is near dynamic support for a retest-style setup')
   } else if (strategyId === 'capitulation-wick-reversal') {
-    if (metrics.rsi14 <= 45 && lowerBandStretch <= 0.06) {
-      score += 2.5
-      reasons.push('Washed-out lower-band candidate; needs wick/reclaim confirmation')
-    }
+    const capitulation = clamp01((48 - metrics.rsi14) / 23) * 4 + proximityScore(lowerBandDistance, 0.07) * 3
+    score += capitulation
+    if (metrics.rsi14 <= 45 && lowerBandDistance <= 0.06) reasons.push('Washed-out lower-band candidate; needs wick/reclaim confirmation')
   }
 
   return { score, reasons }
