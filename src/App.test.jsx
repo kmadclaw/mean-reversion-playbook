@@ -38,15 +38,23 @@ describe('App strategy navigation', () => {
     expect(within(panel).getByText(/Last line of trend support/i)).toBeInTheDocument()
   })
 
-  it('shows disabled scanner and backtest buttons as future features on the strategy page', () => {
+  it('runs the scanner from a strategy page and shows ranked recommendations', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: /Strategies/i }))
 
-    const scannerButton = screen.getByRole('button', { name: /Scanner coming soon/i })
+    const scannerButton = screen.getByRole('button', { name: /^Run scanner$/i })
     const backtestButton = screen.getByRole('button', { name: /Backtest coming soon/i })
-
-    expect(scannerButton).toBeDisabled()
+    expect(scannerButton).toBeEnabled()
     expect(backtestButton).toBeDisabled()
+
+    fireEvent.click(scannerButton)
+
+    const results = screen.getByRole('region', { name: /Scanner recommendations/i })
+    expect(within(results).getByRole('heading', { name: /Scanner recommendations/i })).toBeInTheDocument()
+    expect(within(results).getByText(/Generated from expanded top100 technical indicator feed/i)).toBeInTheDocument()
+    expect(within(results).getByText('BA')).toBeInTheDocument()
+    expect(within(results).getAllByText(/CALL_DEBIT_SPREAD/i).length).toBeGreaterThan(0)
+    expect(within(results).getAllByText(/RSI washed out/i).length).toBeGreaterThan(0)
   })
 })

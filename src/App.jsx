@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import { scannerRun } from './scannerRecommendations'
 import { bullishSetups, processRules, qualityScoreRules, strategyFramework } from './strategies'
 
 const pages = [
@@ -129,7 +130,69 @@ function RulesPage() {
   )
 }
 
-function StrategyDetail({ setup }) {
+function formatCurrency(value) {
+  return `$${value.toFixed(2)}`
+}
+
+function ScannerResults() {
+  const generated = new Date(scannerRun.generatedAt).toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+
+  return (
+    <section className="scanner-results" role="region" aria-label="Scanner recommendations">
+      <div className="scanner-results__header">
+        <div>
+          <p className="eyebrow">Generated from expanded top100 technical indicator feed</p>
+          <h3>Scanner recommendations</h3>
+          <p>Last run: {generated}. These are directional 4–6 week option-structure templates, not exact contracts.</p>
+        </div>
+        <span>{scannerRun.recommendations.length} signals</span>
+      </div>
+
+      <div className="recommendation-list">
+        {scannerRun.recommendations.map((trade, index) => (
+          <article className="recommendation-card" key={trade.symbol}>
+            <div className="recommendation-rank">#{index + 1}</div>
+            <div className="recommendation-main">
+              <div className="recommendation-title">
+                <h4>{trade.symbol}</h4>
+                <span>{trade.direction}</span>
+              </div>
+              <p>{trade.reasoning}</p>
+              {trade.warnings ? <small>{trade.warnings}</small> : null}
+            </div>
+            <dl className="recommendation-stats">
+              <div>
+                <dt>Score</dt>
+                <dd>{trade.score}</dd>
+              </div>
+              <div>
+                <dt>Structure</dt>
+                <dd>{trade.structure}</dd>
+              </div>
+              <div>
+                <dt>Expiry</dt>
+                <dd>{trade.expiry} · {trade.dte} DTE</dd>
+              </div>
+              <div>
+                <dt>Close / Target / Stop</dt>
+                <dd>{formatCurrency(trade.close)} → {formatCurrency(trade.target)} / {formatCurrency(trade.invalidation)}</dd>
+              </div>
+              <div>
+                <dt>RSI14</dt>
+                <dd>{trade.rsi14}</dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function StrategyDetail({ setup, showScanner, onRunScanner }) {
   return (
     <article className="strategy-detail" role="tabpanel" id={`${setup.id}-panel`} aria-labelledby={`${setup.id}-tab`}>
       <div className="detail-hero">
@@ -141,9 +204,9 @@ function StrategyDetail({ setup }) {
           <h2>{setup.title}</h2>
           <p className="summary">{setup.summary}</p>
         </div>
-        <div className="future-actions" aria-label="Future tools">
-          <button type="button" disabled aria-label="Scanner coming soon">
-            Scanner coming soon
+        <div className="future-actions" aria-label="Strategy tools">
+          <button type="button" className="scanner-action" onClick={onRunScanner} aria-pressed={showScanner}>
+            Run scanner
           </button>
           <button type="button" disabled aria-label="Backtest coming soon">
             Backtest coming soon
@@ -151,19 +214,21 @@ function StrategyDetail({ setup }) {
         </div>
       </div>
 
+      {showScanner ? <ScannerResults /> : null}
+
       <div className="rule-grid compact">
         <DetailGroup title="Pattern" items={setup.pattern} />
         <DetailGroup title="Entry triggers" items={setup.entryTriggers} />
         <DetailGroup title="Options expression" items={setup.optionStructures} />
         <DetailGroup title="Targets" items={setup.targets} />
         <DetailGroup title="Invalidation" items={setup.invalidation} />
-        <DetailGroup title="Future scanner seeds" items={setup.scannerSeeds} />
+        <DetailGroup title="Scanner seeds" items={setup.scannerSeeds} />
       </div>
     </article>
   )
 }
 
-function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup }) {
+function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup, showScanner, onRunScanner }) {
   return (
     <section className="content-page strategy-workspace">
       <PageHeader
@@ -196,7 +261,7 @@ function StrategiesPage({ sortedSetups, activeSetup, onSelectSetup }) {
           </div>
         </aside>
 
-        <StrategyDetail setup={activeSetup} />
+        <StrategyDetail setup={activeSetup} showScanner={showScanner} onRunScanner={onRunScanner} />
       </div>
     </section>
   )
@@ -236,6 +301,7 @@ function App() {
   const sortedSetups = [...bullishSetups].sort((a, b) => a.rank - b.rank)
   const [activePage, setActivePage] = useState('overview')
   const [activeSetupId, setActiveSetupId] = useState(sortedSetups[0].id)
+  const [showScanner, setShowScanner] = useState(false)
   const activeSetup = sortedSetups.find((setup) => setup.id === activeSetupId) ?? sortedSetups[0]
 
   return (
@@ -245,7 +311,13 @@ function App() {
         {activePage === 'overview' ? <OverviewPage onSelectPage={setActivePage} /> : null}
         {activePage === 'rules' ? <RulesPage /> : null}
         {activePage === 'strategies' ? (
-          <StrategiesPage sortedSetups={sortedSetups} activeSetup={activeSetup} onSelectSetup={setActiveSetupId} />
+          <StrategiesPage
+            sortedSetups={sortedSetups}
+            activeSetup={activeSetup}
+            onSelectSetup={setActiveSetupId}
+            showScanner={showScanner}
+            onRunScanner={() => setShowScanner(true)}
+          />
         ) : null}
         {activePage === 'roadmap' ? <RoadmapPage /> : null}
       </div>
