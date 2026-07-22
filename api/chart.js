@@ -22,16 +22,24 @@ function standardDeviation(values) {
 
 function rsi(values, period = 14) {
   if (values.length <= period) return 50
-  const slice = values.slice(-(period + 1))
-  let gains = 0
-  let losses = 0
-  for (let index = 1; index < slice.length; index += 1) {
-    const change = slice[index] - slice[index - 1]
-    if (change >= 0) gains += change
-    else losses += Math.abs(change)
+
+  const gains = []
+  const losses = []
+  for (let index = 1; index < values.length; index += 1) {
+    const change = values[index] - values[index - 1]
+    gains.push(Math.max(change, 0))
+    losses.push(Math.max(-change, 0))
   }
-  if (losses === 0) return 100
-  const rs = gains / losses
+
+  let averageGain = average(gains.slice(0, period))
+  let averageLoss = average(losses.slice(0, period))
+  for (let index = period; index < gains.length; index += 1) {
+    averageGain = (averageGain * (period - 1) + gains[index]) / period
+    averageLoss = (averageLoss * (period - 1) + losses[index]) / period
+  }
+
+  if (averageLoss === 0) return 100
+  const rs = averageGain / averageLoss
   return 100 - 100 / (1 + rs)
 }
 
