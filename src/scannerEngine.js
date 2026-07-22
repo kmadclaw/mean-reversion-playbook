@@ -3,30 +3,8 @@ import { bullishSetups } from './strategies'
 
 const DEFAULT_UNIVERSE = getUniverseSymbols()
 
-const strategyFitById = {
-  'prior-support-breakout-retest': 'Closest match to support / breakout retest behavior from the latest feed.',
-  'ema20-pullback-bounce': 'Pullback candidate near the 20 EMA mean with oversold/reversal conditions.',
-  'lower-bollinger-reentry': 'Lower Bollinger Band stretch candidate; watch for re-entry confirmation.',
-  'ema20-sma50-mean-zone': 'Deeper mean-zone candidate between 20 EMA and 50 SMA support.',
-  'sma50-defense': '50 SMA defense candidate; watch whether buyers defend the larger trend line.',
-  'ema8-reclaim-after-pullback': 'EMA8 reclaim candidate after a controlled pullback.',
-  'rsi-oversold-reversal': 'RSI oversold / washed-out reversal candidate.',
-  'capitulation-wick-reversal': 'Capitulation flush candidate; needs wick/reclaim confirmation.',
-}
-
 function hashSymbol(symbol, salt = '') {
   return `${symbol}${salt}`.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)
-}
-
-function firstFriday28To42Dte(now = new Date()) {
-  for (let dte = 28; dte <= 42; dte += 1) {
-    const candidate = new Date(now)
-    candidate.setDate(candidate.getDate() + dte)
-    if (candidate.getDay() === 5) {
-      return { expiry: candidate.toISOString().slice(0, 10), dte }
-    }
-  }
-  return { expiry: '', dte: 0 }
 }
 
 function clamp01(value) {
@@ -90,16 +68,10 @@ function scoreLiveForStrategy(strategyId, metrics) {
   return { score, reasons }
 }
 
-function toRecommendation(strategyId, metrics, score, reasons) {
-  const { expiry, dte } = firstFriday28To42Dte()
+function toRecommendation(metrics, score) {
   return {
     symbol: metrics.symbol,
-    signal: 'BULLISH_REVERSION',
-    direction: 'Bullish bounce',
     score: Number(score.toFixed(1)),
-    structure: 'CALL_DEBIT_SPREAD',
-    expiry,
-    dte,
     currentPrice: Number(metrics.close.toFixed(2)),
     close: Number(metrics.close.toFixed(2)),
     rsi14: Number(metrics.rsi14.toFixed(1)),
@@ -114,11 +86,7 @@ function toRecommendation(strategyId, metrics, score, reasons) {
     dayHigh: Number(metrics.dayHigh.toFixed(2)),
     week52Low: Number(metrics.week52Low.toFixed(2)),
     week52High: Number(metrics.week52High.toFixed(2)),
-    target: Number(Math.max(metrics.ema20, metrics.sma20, metrics.close * 1.04).toFixed(2)),
-    invalidation: Number(Math.min(metrics.sma50, metrics.close * 0.94).toFixed(2)),
-    reasoning: reasons.join(' | '),
     warnings: '',
-    strategyFit: strategyFitById[strategyId],
   }
 }
 
@@ -161,7 +129,7 @@ function fallbackRecommendations(strategyId, universe = DEFAULT_UNIVERSE) {
     .sort((a, b) => b.score - a.score)
 
   const recommendations = scored
-    .map((candidate) => toRecommendation(strategyId, candidate.metrics, candidate.score, candidate.reasons))
+    .map((candidate) => toRecommendation(candidate.metrics, candidate.score))
 
   return {
     strategyId,
@@ -246,7 +214,7 @@ export async function scanStrategy(strategyId, universe = DEFAULT_UNIVERSE) {
 
     const recommendations = scoredCandidates
       .sort((a, b) => b.score - a.score)
-      .map((candidate) => toRecommendation(strategyId, candidate.metrics, candidate.score, candidate.reasons))
+      .map((candidate) => toRecommendation(candidate.metrics, candidate.score))
 
     if (!recommendations.length) return fallbackRecommendations(strategyId, universe)
 
