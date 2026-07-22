@@ -1,7 +1,8 @@
 import { scannerRun } from './scannerRecommendations'
+import { getUniverseSymbols } from './liquidUniverse'
 import { bullishSetups } from './strategies'
 
-const DEFAULT_UNIVERSE = ['SPY', 'QQQ', 'AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL', 'TSLA', 'BA', 'ISRG', 'MCD', 'PEP', 'DHR', 'CVS', 'NFLX']
+const DEFAULT_UNIVERSE = getUniverseSymbols()
 
 const fallbackOrderByStrategy = {
   'prior-support-breakout-retest': ['BA', 'ISRG', 'DHR', 'NFLX', 'MCD'],
@@ -203,15 +204,39 @@ function fallbackRecommendations(strategyId) {
     generatedAt: scannerRun.generatedAt,
     source: scannerRun.source,
     mode: 'snapshot-fallback',
+    scannedCount: getUniverseSymbols().length,
+    passedCount: recommendations.length,
     recommendations,
   }
+}
+
+export async function fetchSymbolSnapshot(symbol) {
+  const metrics = await fetchYahooMetrics(symbol)
+  return {
+    symbol: metrics.symbol,
+    price: Number(metrics.close.toFixed(2)),
+    changePercent: Number((((metrics.close - metrics.previousClose) / metrics.previousClose) * 100).toFixed(2)),
+    rsi14: Number(metrics.rsi14.toFixed(1)),
+    ema20: Number(metrics.ema20.toFixed(2)),
+    sma50: Number(metrics.sma50.toFixed(2)),
+    chartPoints: [metrics.sma50, metrics.ema20, metrics.previousClose, metrics.close].map((value) => Number(value.toFixed(2))),
+  }
+}
+
+async function fetchUniverseMetrics(universe, batchSize = 12) {
+  const settled = []
+  for (let index = 0; index < universe.length; index += batchSize) {
+    const batch = universe.slice(index, index + batchSize)
+    settled.push(...await Promise.allSettled(batch.map((symbol) => fetchYahooMetrics(symbol))))
+  }
+  return settled
 }
 
 export async function scanStrategy(strategyId, universe = DEFAULT_UNIVERSE) {
   const setup = bullishSetups.find((candidate) => candidate.id === strategyId) ?? bullishSetups[0]
   try {
-    const settled = await Promise.allSettled(universe.map((symbol) => fetchYahooMetrics(symbol)))
-    const recommendations = settled
+    const settled = await fetchUniverseMetrics(universe)
+    const scoredCandidates = settled
       .filter((item) => item.status === 'fulfilled')
       .map((item) => item.value)
       .map((metrics) => {
@@ -219,8 +244,10 @@ export async function scanStrategy(strategyId, universe = DEFAULT_UNIVERSE) {
         return { metrics, score, reasons }
       })
       .filter((candidate) => candidate.score > 2.5)
+
+    const recommendations = scoredCandidates
       .sort((a, b) => b.score - a.score)
-      .slice(0, 8)
+      .slice(0, 12)
       .map((candidate) => toRecommendationFromLive(strategyId, candidate.metrics, candidate.score, candidate.reasons))
 
     if (!recommendations.length) return fallbackRecommendations(strategyId)
@@ -231,6 +258,8 @@ export async function scanStrategy(strategyId, universe = DEFAULT_UNIVERSE) {
       generatedAt: new Date().toISOString(),
       source: 'Live Yahoo Finance daily chart candles fetched in browser',
       mode: 'live',
+      scannedCount: universe.length,
+      passedCount: scoredCandidates.length,
       recommendations,
     }
   } catch {

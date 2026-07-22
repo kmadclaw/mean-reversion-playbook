@@ -41,6 +41,23 @@ describe('App strategy navigation', () => {
     expect(within(panel).getByText(/Last line of trend support/i)).toBeInTheDocument()
   })
 
+  it('loads the universe page with stock tiles and an interactive chart panel', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Universe/i }))
+
+    expect(screen.getByRole('heading', { name: /Liquid options universe/i })).toBeInTheDocument()
+    expect(screen.getByText(/100–150 liquid option names/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/AAPL/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Apple/).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: /NVDA/i }))
+
+    const chart = screen.getByRole('region', { name: /Interactive price chart/i })
+    expect(within(chart).getByRole('heading', { name: /NVDA price chart/i })).toBeInTheDocument()
+    expect(within(chart).getByRole('img', { name: /Interactive chart display/i })).toBeInTheDocument()
+  })
+
   it('runs the selected strategy scanner and shows strategy-specific recommendations', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network unavailable')))
     render(<App />)
