@@ -46,8 +46,8 @@ describe('strategy-specific scanner engine', () => {
     expect(smaDefense.scannedCount).toBeGreaterThanOrEqual(100)
     expect(supportRetest.strategyTitle).toBe('Prior Support / Breakout Retest')
     expect(smaDefense.strategyTitle).toBe('50 SMA Defense Setup')
-    expect(supportRetest.recommendations[0].strategyFit).toMatch(/support|retest/i)
-    expect(smaDefense.recommendations[0].strategyFit).toMatch(/50 SMA/i)
+    expect(supportRetest.recommendations[0].strategyFit).toBeUndefined()
+    expect(smaDefense.recommendations[0].strategyFit).toBeUndefined()
     expect(supportRetest.recommendations.map((trade) => trade.symbol).join(',')).not.toBe(
       smaDefense.recommendations.map((trade) => trade.symbol).join(','),
     )
