@@ -457,9 +457,10 @@ li {
 
 .scanner-table {
   width: 100%;
-  min-width: 920px;
+  max-width: 100%;
   border-collapse: collapse;
-  font-size: 0.74rem;
+  table-layout: fixed;
+  font-size: 0.7rem;
 }
 
 .scanner-table th,
@@ -473,10 +474,25 @@ li {
 .scanner-table thead th {
   color: #68747c;
   background: #f8fafb;
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   font-weight: 850;
-  letter-spacing: 0.045em;
+  letter-spacing: 0.035em;
   text-transform: uppercase;
+}
+
+.scanner-table th:nth-child(1),
+.scanner-table td:nth-child(1) {
+  width: 7%;
+}
+
+.scanner-table th:nth-child(2),
+.scanner-table td:nth-child(2) {
+  width: 9%;
+}
+
+.scanner-table th:nth-child(11),
+.scanner-table td:nth-child(11) {
+  width: 20%;
 }
 
 .scanner-table tbody th {
@@ -494,7 +510,7 @@ li {
 }
 
 .range-cell {
-  min-width: 150px;
+  min-width: 110px;
 }
 
 .range-track {
@@ -572,53 +588,89 @@ li {
   align-items: start;
 }
 
-.universe-grid {
+.universe-table-wrap {
   max-height: 72vh;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 8px;
   overflow: auto;
-  padding-right: 4px;
-}
-
-.universe-tile,
-.chart-panel,
-.price-stats div {
   border: 1px solid #d9e0e6;
   border-radius: 10px;
   background: #ffffff;
 }
 
-.universe-tile {
-  display: grid;
-  gap: 2px;
-  padding: 9px;
-  color: #1a1a1b;
-  font: inherit;
+.universe-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.68rem;
+}
+
+.universe-table th,
+.universe-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #eef1f3;
+  color: #25313a;
+  font-weight: 750;
   text-align: left;
+  white-space: nowrap;
+}
+
+.universe-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: #68747c;
+  background: #f8fafb;
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.universe-table tbody tr:hover,
+.universe-table tbody tr.active {
+  background: #fff7f3;
+}
+
+.universe-table tbody tr.active th,
+.universe-table tbody tr.active td {
+  border-bottom-color: #ffd3bf;
+}
+
+.universe-table th:nth-child(1),
+.universe-table td:nth-child(1) {
+  width: 10%;
+}
+
+.universe-table th:nth-child(2),
+.universe-table td:nth-child(2) {
+  width: 16%;
+}
+
+.universe-table th:nth-child(9),
+.universe-table td:nth-child(9) {
+  width: 21%;
+}
+
+.universe-symbol-button {
+  border: 0;
+  padding: 0;
+  color: #0f3f62;
+  background: transparent;
+  font: inherit;
+  font-weight: 900;
   cursor: pointer;
 }
 
-.universe-tile:hover,
-.universe-tile:focus-visible,
-.universe-tile.active {
-  border-color: #ff4500;
-  background: #fff7f3;
+.universe-symbol-button:hover,
+.universe-symbol-button:focus-visible {
+  color: #ff4500;
   outline: none;
 }
 
-.universe-tile strong {
-  font-size: 0.86rem;
-}
-
-.universe-tile span,
-.universe-tile small {
-  overflow: hidden;
-  color: #53606a;
-  font-size: 0.72rem;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.chart-panel,
+.price-stats div {
+  border: 1px solid #d9e0e6;
+  border-radius: 10px;
+  background: #ffffff;
 }
 
 .chart-panel {

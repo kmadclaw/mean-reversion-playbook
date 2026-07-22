@@ -185,8 +185,11 @@ export async function fetchSymbolSnapshot(symbol, range = '6mo') {
     week52Low: Number(metrics.week52Low.toFixed(2)),
     week52High: Number(metrics.week52High.toFixed(2)),
     rsi14: Number(metrics.rsi14.toFixed(1)),
+    ema8: Number(metrics.ema8.toFixed(2)),
     ema20: Number(metrics.ema20.toFixed(2)),
+    ema50: Number(metrics.ema50.toFixed(2)),
     sma50: Number(metrics.sma50.toFixed(2)),
+    bbLower: Number(metrics.bbLower.toFixed(2)),
     chartPoints: metrics.chartPoints,
   }
 }
@@ -199,6 +202,28 @@ async function fetchUniverseMetrics(universe, batchSize = 24) {
     metrics.push(...batch.map((symbol) => normalizeMetrics(data[symbol])).filter(Boolean))
   }
   return metrics
+}
+
+export async function fetchUniverseSnapshots(universe = DEFAULT_UNIVERSE) {
+  const metricsList = await fetchUniverseMetrics(universe)
+  return metricsList.map((metrics) => ({
+    symbol: metrics.symbol,
+    price: Number(metrics.close.toFixed(2)),
+    currentPrice: Number(metrics.close.toFixed(2)),
+    close: Number(metrics.close.toFixed(2)),
+    changePercent: Number((((metrics.close - metrics.previousClose) / metrics.previousClose) * 100).toFixed(2)),
+    rsi14: Number(metrics.rsi14.toFixed(1)),
+    ema8: Number(metrics.ema8.toFixed(2)),
+    ema20: Number(metrics.ema20.toFixed(2)),
+    ema50: Number(metrics.ema50.toFixed(2)),
+    sma50: Number(metrics.sma50.toFixed(2)),
+    bbLower: Number(metrics.bbLower.toFixed(2)),
+    dayLow: Number(metrics.dayLow.toFixed(2)),
+    dayHigh: Number(metrics.dayHigh.toFixed(2)),
+    week52Low: Number(metrics.week52Low.toFixed(2)),
+    week52High: Number(metrics.week52High.toFixed(2)),
+    chartPoints: metrics.chartPoints,
+  }))
 }
 
 export async function scanStrategy(strategyId, universe = DEFAULT_UNIVERSE) {
