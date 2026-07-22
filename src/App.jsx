@@ -142,42 +142,64 @@ function fallbackPrice(symbol) {
 
 function makeFallbackSnapshot(symbol) {
   const price = fallbackPrice(symbol)
+  const chartPoints = Array.from({ length: 90 }, (_, index) => {
+    const close = price * (0.9 + index / 900 + Math.sin(index / 5) / 50)
+    return { date: `d${index}`, close: Number(close.toFixed(2)), high: Number((close * 1.012).toFixed(2)), low: Number((close * 0.988).toFixed(2)) }
+  })
   return {
     symbol,
     price,
     changePercent: ((symbol.charCodeAt(0) % 9) - 4) / 2,
+    dayLow: Number((price * 0.985).toFixed(2)),
+    dayHigh: Number((price * 1.015).toFixed(2)),
+    week52Low: Number((price * 0.72).toFixed(2)),
+    week52High: Number((price * 1.18).toFixed(2)),
     rsi14: 48,
     ema20: Number((price * 0.98).toFixed(2)),
     sma50: Number((price * 0.95).toFixed(2)),
-    chartPoints: [price * 0.92, price * 0.96, price * 0.94, price * 1.01, price].map((value) => Number(value.toFixed(2))),
+    chartPoints,
   }
 }
 
 function PriceSparkline({ points }) {
-  const safePoints = points.length ? points : [1, 1]
-  const min = Math.min(...safePoints)
-  const max = Math.max(...safePoints)
+  const safePoints = points.length ? points : [{ close: 1 }]
+  const closes = safePoints.map((point) => (typeof point === 'number' ? point : point.close))
+  const min = Math.min(...closes)
+  const max = Math.max(...closes)
   const span = max - min || 1
-  const coords = safePoints
-    .map((point, index) => `${(index / Math.max(1, safePoints.length - 1)) * 100},${60 - ((point - min) / span) * 50}`)
+  const coords = closes
+    .map((point, index) => `${(index / Math.max(1, closes.length - 1)) * 100},${60 - ((point - min) / span) * 50}`)
     .join(' ')
 
   return (
     <svg className="price-chart" viewBox="0 0 100 64" role="img" aria-label="Interactive chart display">
       <polyline points={coords} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      {closes.map((point, index) => {
+        const x = (index / Math.max(1, closes.length - 1)) * 100
+        const y = 60 - ((point - min) / span) * 50
+        return <circle key={`${index}-${point}`} cx={x} cy={y} r="1.1"><title>{`${safePoints[index].date ?? index}: ${formatCurrency(point)}`}</title></circle>
+      })}
     </svg>
   )
 }
 
 function UniversePage() {
   const [selectedSymbol, setSelectedSymbol] = useState('AAPL')
+  const [selectedRange, setSelectedRange] = useState('3mo')
   const [snapshot, setSnapshot] = useState(makeFallbackSnapshot('AAPL'))
   const selectedStock = LIQUID_OPTIONS_UNIVERSE.find((stock) => stock.symbol === selectedSymbol) ?? LIQUID_OPTIONS_UNIVERSE[0]
+  const ranges = [
+    { label: '1M', value: '1mo', points: 22 },
+    { label: '3M', value: '3mo', points: 65 },
+    { label: '6M', value: '6mo', points: 130 },
+  ]
+  const activeRange = ranges.find((range) => range.value === selectedRange) ?? ranges[1]
+  const visiblePoints = snapshot.chartPoints.slice(-activeRange.points)
 
   useEffect(() => {
     let active = true
     setSnapshot(makeFallbackSnapshot(selectedSymbol))
-    fetchSymbolSnapshot(selectedSymbol)
+    fetchSymbolSnapshot(selectedSymbol, '6mo')
       .then((nextSnapshot) => {
         if (active) setSnapshot(nextSnapshot)
       })
@@ -201,7 +223,10 @@ function UniversePage() {
               type="button"
               key={stock.symbol}
               className={stock.symbol === selectedSymbol ? 'universe-tile active' : 'universe-tile'}
-              onClick={() => setSelectedSymbol(stock.symbol)}
+              onClick={() => {
+                setSelectedSymbol(stock.symbol)
+                setSelectedRange('3mo')
+              }}
             >
               <strong>{stock.symbol}</strong>
               <span>{stock.name}</span>
@@ -213,8 +238,7 @@ function UniversePage() {
           <div className="chart-panel__header">
             <div>
               <p className="eyebrow">{selectedStock.group}</p>
-              <h2>{selectedSymbol} price chart</h2>
-              <p>{selectedStock.name}</p>
+              <h2>{selectedSymbol} - {selectedStock.name}</h2>
             </div>
             <div className={snapshot.changePercent >= 0 ? 'price-change positive' : 'price-change negative'}>
               {snapshot.changePercent >= 0 ? '+' : ''}{snapshot.changePercent.toFixed(2)}%
@@ -224,13 +248,24 @@ function UniversePage() {
             <span>Last price</span>
             <strong>{formatCurrency(snapshot.price)}</strong>
           </div>
-          <PriceSparkline points={snapshot.chartPoints} />
+          <PriceSparkline points={visiblePoints} />
           <div className="chart-controls" aria-label="Chart range controls">
-            <button type="button">1M</button>
-            <button type="button" className="active">3M</button>
-            <button type="button">6M</button>
+            {ranges.map((range) => (
+              <button
+                type="button"
+                key={range.value}
+                className={range.value === selectedRange ? 'active' : undefined}
+                onClick={() => setSelectedRange(range.value)}
+              >
+                {range.label}
+              </button>
+            ))}
           </div>
-          <dl className="price-stats">
+          <dl className="price-stats price-stats--wide">
+            <div><dt>Day low</dt><dd>{formatCurrency(snapshot.dayLow)}</dd></div>
+            <div><dt>Day high</dt><dd>{formatCurrency(snapshot.dayHigh)}</dd></div>
+            <div><dt>52W low</dt><dd>{formatCurrency(snapshot.week52Low)}</dd></div>
+            <div><dt>52W high</dt><dd>{formatCurrency(snapshot.week52High)}</dd></div>
             <div><dt>RSI14</dt><dd>{snapshot.rsi14}</dd></div>
             <div><dt>20 EMA</dt><dd>{formatCurrency(snapshot.ema20)}</dd></div>
             <div><dt>50 SMA</dt><dd>{formatCurrency(snapshot.sma50)}</dd></div>
