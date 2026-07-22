@@ -100,10 +100,22 @@ function toRecommendation(strategyId, metrics, score, reasons) {
     structure: 'CALL_DEBIT_SPREAD',
     expiry,
     dte,
+    currentPrice: Number(metrics.close.toFixed(2)),
     close: Number(metrics.close.toFixed(2)),
+    rsi14: Number(metrics.rsi14.toFixed(1)),
+    ema8: Number(metrics.ema8.toFixed(2)),
+    ema20: Number(metrics.ema20.toFixed(2)),
+    ema50: Number(metrics.ema50.toFixed(2)),
+    sma20: Number(metrics.sma20.toFixed(2)),
+    sma50: Number(metrics.sma50.toFixed(2)),
+    bbLower: Number(metrics.bbLower.toFixed(2)),
+    bbUpper: Number(metrics.bbUpper.toFixed(2)),
+    dayLow: Number(metrics.dayLow.toFixed(2)),
+    dayHigh: Number(metrics.dayHigh.toFixed(2)),
+    week52Low: Number(metrics.week52Low.toFixed(2)),
+    week52High: Number(metrics.week52High.toFixed(2)),
     target: Number(Math.max(metrics.ema20, metrics.sma20, metrics.close * 1.04).toFixed(2)),
     invalidation: Number(Math.min(metrics.sma50, metrics.close * 0.94).toFixed(2)),
-    rsi14: Number(metrics.rsi14.toFixed(1)),
     reasoning: reasons.join(' | '),
     warnings: '',
     strategyFit: strategyFitById[strategyId],
@@ -115,6 +127,7 @@ function fallbackMetrics(symbol, strategyId) {
   const close = 45 + (seed % 420) + (seed % 13) / 10
   const ema20 = close * (0.97 + (seed % 9) / 100)
   const sma50 = close * (0.94 + (seed % 13) / 100)
+  const ema50 = close * (0.945 + (seed % 12) / 100)
   const rsi14 = 28 + (seed % 26)
   const sma20 = close * (0.98 + (seed % 5) / 100)
   return {
@@ -123,11 +136,16 @@ function fallbackMetrics(symbol, strategyId) {
     previousClose: close * (0.99 - (seed % 4) / 100),
     ema8: close * (0.985 + (seed % 3) / 100),
     ema20,
+    ema50,
     sma20,
     sma50,
     bbLower: close * (0.92 + (seed % 4) / 100),
     bbUpper: close * 1.08,
     rsi14,
+    dayLow: close * 0.985,
+    dayHigh: close * 1.015,
+    week52Low: close * 0.72,
+    week52High: close * 1.18,
   }
 }
 
@@ -172,6 +190,7 @@ function normalizeMetrics(item) {
     previousClose: item.previousClose,
     ema8: item.ema8,
     ema20: item.ema20,
+    ema50: item.ema50 ?? item.sma50,
     sma20: item.sma20,
     sma50: item.sma50,
     bbLower: item.bbLower,

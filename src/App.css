@@ -448,94 +448,82 @@ li {
   opacity: 0.45;
 }
 
-.recommendation-list {
-  display: grid;
-  gap: 8px;
-}
-
-.recommendation-card {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) minmax(210px, 260px);
-  gap: 10px;
-  padding: 10px;
+.scanner-table-wrap {
+  overflow-x: auto;
   border: 1px solid #eadfd9;
   border-radius: 9px;
   background: #ffffff;
 }
 
-.recommendation-rank {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: #ffffff;
-  background: #0f3f62;
-  font-size: 0.7rem;
-  font-weight: 850;
-}
-
-.recommendation-title {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 5px;
-}
-
-.recommendation-title h4 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.recommendation-title span {
-  color: #0f3f62;
+.scanner-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
   font-size: 0.74rem;
-  font-weight: 800;
 }
 
-.recommendation-main p,
-.recommendation-main small {
-  color: #47545c;
-  font-size: 0.78rem;
-  line-height: 1.4;
+.scanner-table th,
+.scanner-table td {
+  padding: 8px 9px;
+  border-bottom: 1px solid #eef1f3;
+  text-align: left;
+  white-space: nowrap;
 }
 
-.recommendation-main p {
-  margin-bottom: 5px;
-}
-
-.recommendation-main small {
-  display: block;
-  color: #7b4b13;
-}
-
-.recommendation-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  margin: 0;
-}
-
-.recommendation-stats div {
-  padding: 6px;
-  border-radius: 7px;
+.scanner-table thead th {
+  color: #68747c;
   background: #f8fafb;
-}
-
-.recommendation-stats dt {
-  color: #7c858c;
-  font-size: 0.63rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.045em;
   text-transform: uppercase;
 }
 
-.recommendation-stats dd {
-  margin: 2px 0 0;
-  color: #1a1a1b;
-  font-size: 0.74rem;
-  font-weight: 750;
+.scanner-table tbody th {
+  color: #0f3f62;
+  font-weight: 900;
+}
+
+.scanner-table tbody td {
+  color: #25313a;
+  font-weight: 700;
+}
+
+.scanner-table tbody tr:hover {
+  background: #fff8f4;
+}
+
+.range-cell {
+  min-width: 150px;
+}
+
+.range-track {
+  position: relative;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2f80ed 0%, #f2c94c 50%, #eb5757 100%);
+}
+
+.range-track span {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #1a1a1b;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.24);
+  transform: translate(-50%, -50%);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 4px;
+  color: #6b747c;
+  font-size: 0.62rem;
+  font-weight: 800;
 }
 
 .rule-grid {
