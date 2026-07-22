@@ -1185,24 +1185,6 @@ li {
     margin-bottom: 2px;
   }
 
-  .mobile-card-chart {
-    display: block;
-    position: static;
-    margin-top: 12px;
-    padding: 12px;
-    border-color: #ffd3bf;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-
-  .mobile-card-chart .price-chart {
-    height: 150px;
-  }
-
-  .mobile-card-chart .price-stats--wide {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .range-cell {
     min-width: 0;
   }
