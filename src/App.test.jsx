@@ -65,10 +65,9 @@ describe('App strategy navigation', () => {
     expect(xlpRow.querySelector('.mobile-row-chips')).toBeInTheDocument()
     fireEvent.click(xlpButton)
     expect(xlpRow).toHaveClass('active')
-    const inlineChartRow = xlpRow.nextElementSibling
-    expect(inlineChartRow).toHaveClass('universe-inline-chart-row')
-    expect(inlineChartRow.querySelector('.mobile-inline-chart')).toBeInTheDocument()
-    expect(inlineChartRow.textContent).toContain('XLP - Consumer Staples SPDR')
+    const xlpInlineChart = xlpRow.querySelector('.mobile-card-chart')
+    expect(xlpInlineChart).toBeInTheDocument()
+    expect(xlpInlineChart.textContent).toContain('XLP - Consumer Staples SPDR')
 
     const chart = screen.getByRole('region', { name: /Interactive price chart/i })
     expect(within(chart).getByRole('heading', { name: /XLP - Consumer Staples SPDR/i })).toBeInTheDocument()
@@ -83,9 +82,10 @@ describe('App strategy navigation', () => {
     fireEvent.click(xlvButton)
     expect(xlpRow).not.toHaveClass('active')
     expect(xlvRow).toHaveClass('active')
-    expect(xlpRow.nextElementSibling).not.toHaveClass('universe-inline-chart-row')
-    expect(xlvRow.nextElementSibling).toHaveClass('universe-inline-chart-row')
-    expect(xlvRow.nextElementSibling.textContent).toContain('XLV - Health Care Select Sector SPDR')
+    expect(xlpRow.querySelector('.mobile-card-chart')).not.toBeInTheDocument()
+    const xlvInlineChart = xlvRow.querySelector('.mobile-card-chart')
+    expect(xlvInlineChart).toBeInTheDocument()
+    expect(xlvInlineChart.textContent).toContain('XLV - Health Care Select Sector SPDR')
 
     const oneMonth = within(chart).getByRole('button', { name: /1M/i })
     fireEvent.click(oneMonth)
