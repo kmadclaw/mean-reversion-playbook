@@ -277,6 +277,14 @@ function UniversePage() {
 }
 
 function ScannerResults({ result }) {
+  const [pageIndex, setPageIndex] = useState(0)
+  const pageSize = 12
+  const totalResults = result.recommendations.length
+  const totalPages = Math.max(1, Math.ceil(totalResults / pageSize))
+  const safePageIndex = Math.min(pageIndex, totalPages - 1)
+  const pageStart = safePageIndex * pageSize
+  const visibleRecommendations = result.recommendations.slice(pageStart, pageStart + pageSize)
+  const pageEnd = pageStart + visibleRecommendations.length
   const generated = new Date(result.generatedAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -289,15 +297,25 @@ function ScannerResults({ result }) {
         <div>
           <p className="eyebrow">{modeLabel} · {result.source}</p>
           <h3>{result.strategyTitle} scanner recommendations</h3>
-          <p>Last run: {generated}. Results are generated for the selected strategy only; option structures are templates, not exact contracts.</p>
+          <p>Last run: {generated}. Results are generated for the selected strategy only.</p>
         </div>
-        <span>{result.recommendations.length} shown · {result.passedCount ?? result.recommendations.length} passed · {result.scannedCount ?? '—'} scanned</span>
+        <span>{pageStart + 1}-{pageEnd} of {totalResults} shown · {result.passedCount ?? totalResults} passed · {result.scannedCount ?? '—'} scanned</span>
+      </div>
+
+      <div className="scanner-pagination" aria-label="Scanner pagination">
+        <button type="button" onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0} aria-label="Previous scanner results">
+          Previous
+        </button>
+        <span>Page {safePageIndex + 1} of {totalPages}</span>
+        <button type="button" onClick={() => setPageIndex((current) => Math.min(totalPages - 1, current + 1))} disabled={safePageIndex >= totalPages - 1} aria-label="Next scanner results">
+          Next
+        </button>
       </div>
 
       <div className="recommendation-list">
-        {result.recommendations.map((trade, index) => (
+        {visibleRecommendations.map((trade, index) => (
           <article className="recommendation-card" key={trade.symbol}>
-            <div className="recommendation-rank">#{index + 1}</div>
+            <div className="recommendation-rank">#{pageStart + index + 1}</div>
             <div className="recommendation-main">
               <div className="recommendation-title">
                 <h4>{trade.symbol}</h4>
@@ -359,7 +377,7 @@ function StrategyDetail({ setup, scannerStatus, scannerResult, onRunScanner }) {
       </div>
 
       {scannerStatus === 'scanning' ? <div className="scanner-loading" role="status">Scanning live market data for {setup.title}…</div> : null}
-      {scannerStatus === 'done' && scannerResult ? <ScannerResults result={scannerResult} /> : null}
+      {scannerStatus === 'done' && scannerResult ? <ScannerResults key={`${scannerResult.strategyId}-${scannerResult.generatedAt}`} result={scannerResult} /> : null}
 
       <div className="rule-grid compact">
         <DetailGroup title="Pattern" items={setup.pattern} />

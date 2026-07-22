@@ -34,6 +34,9 @@ describe('strategy-specific scanner engine', () => {
     const supportRetest = await scanStrategy('prior-support-breakout-retest')
     const smaDefense = await scanStrategy('sma50-defense')
 
+    expect(smaDefense.recommendations.length).toBe(smaDefense.passedCount)
+    expect(smaDefense.recommendations.length).toBeGreaterThan(12)
+    expect(smaDefense.recommendations[0].warnings).toBe('')
     expect(supportRetest.strategyId).toBe('prior-support-breakout-retest')
     expect(smaDefense.strategyId).toBe('sma50-defense')
     expect(supportRetest.mode).toBe('snapshot-fallback')

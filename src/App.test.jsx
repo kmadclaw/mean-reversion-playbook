@@ -87,6 +87,17 @@ describe('App strategy navigation', () => {
     expect(within(results).getByRole('heading', { name: /50 SMA Defense Setup scanner recommendations/i })).toBeInTheDocument()
     expect(within(results).getAllByText(/50 SMA defense candidate/i).length).toBeGreaterThan(0)
     expect(within(results).getAllByText(/Snapshot fallback/i).length).toBeGreaterThan(0)
+    expect(within(results).queryByText(/exact options strikes are not selected yet/i)).not.toBeInTheDocument()
+    expect(within(results).getByText(/Page 1/i)).toBeInTheDocument()
+    expect(within(results).getByRole('button', { name: /Previous scanner results/i })).toBeDisabled()
+    const nextPage = within(results).getByRole('button', { name: /Next scanner results/i })
+    expect(nextPage).toBeEnabled()
     expect(within(results).getByText('MCD')).toBeInTheDocument()
+
+    fireEvent.click(nextPage)
+
+    expect(within(results).getByText(/Page 2/i)).toBeInTheDocument()
+    expect(within(results).queryByText('MCD')).not.toBeInTheDocument()
+    expect(within(results).getByText(/#13/)).toBeInTheDocument()
   })
 })
