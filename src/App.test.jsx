@@ -41,7 +41,8 @@ describe('App strategy navigation', () => {
     expect(within(panel).getByText(/Last line of trend support/i)).toBeInTheDocument()
   })
 
-  it('loads the universe page with stock tiles and an interactive chart panel', () => {
+  it('loads the universe page with compact stock title, range stats, and interactive chart controls', () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network unavailable')))
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: /Universe/i }))
@@ -51,11 +52,20 @@ describe('App strategy navigation', () => {
     expect(screen.getAllByText(/AAPL/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Apple/).length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('button', { name: /NVDA/i }))
+    fireEvent.click(screen.getByRole('button', { name: /XLP/i }))
 
     const chart = screen.getByRole('region', { name: /Interactive price chart/i })
-    expect(within(chart).getByRole('heading', { name: /NVDA price chart/i })).toBeInTheDocument()
+    expect(within(chart).getByRole('heading', { name: /XLP - Consumer Staples SPDR/i })).toBeInTheDocument()
+    expect(within(chart).queryByText(/price chart/i)).not.toBeInTheDocument()
     expect(within(chart).getByRole('img', { name: /Interactive chart display/i })).toBeInTheDocument()
+    expect(within(chart).getByText(/Day low/i)).toBeInTheDocument()
+    expect(within(chart).getByText(/Day high/i)).toBeInTheDocument()
+    expect(within(chart).getByText(/52W low/i)).toBeInTheDocument()
+    expect(within(chart).getByText(/52W high/i)).toBeInTheDocument()
+
+    const oneMonth = within(chart).getByRole('button', { name: /1M/i })
+    fireEvent.click(oneMonth)
+    expect(oneMonth).toHaveClass('active')
   })
 
   it('runs the selected strategy scanner and shows strategy-specific recommendations', async () => {
@@ -76,7 +86,7 @@ describe('App strategy navigation', () => {
     const results = await screen.findByRole('region', { name: /Scanner recommendations/i })
     expect(within(results).getByRole('heading', { name: /50 SMA Defense Setup scanner recommendations/i })).toBeInTheDocument()
     expect(within(results).getAllByText(/50 SMA defense candidate/i).length).toBeGreaterThan(0)
-    expect(within(results).getByText(/Snapshot fallback/i)).toBeInTheDocument()
+    expect(within(results).getAllByText(/Snapshot fallback/i).length).toBeGreaterThan(0)
     expect(within(results).getByText('MCD')).toBeInTheDocument()
   })
 })

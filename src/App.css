@@ -703,6 +703,10 @@ li {
   margin: 0;
 }
 
+.price-stats--wide {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .price-stats div {
   padding: 8px;
 }
