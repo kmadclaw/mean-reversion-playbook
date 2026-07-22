@@ -83,6 +83,7 @@ function parseYahoo(symbol, json) {
     week52Low: Math.min(...finiteSeries(lowSeries.slice(-252))),
     ema8: ema(closeSeries, 8),
     ema20: ema(closeSeries, 20),
+    ema50: ema(closeSeries, 50),
     sma20: middle,
     sma50: sma(closeSeries, 50),
     bbLower: middle - deviation * 2,

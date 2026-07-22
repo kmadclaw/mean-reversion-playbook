@@ -13,6 +13,7 @@ function makeApiSymbol(symbol, closes, overrides = {}) {
     week52Low: Math.min(...closes) - 4,
     ema8: close - 1,
     ema20: close + 1,
+    ema50: close + 2,
     sma20: close,
     sma50: close - 2,
     bbLower: close - 5,
@@ -68,7 +69,13 @@ describe('strategy-specific scanner engine', () => {
     expect(result.source).toMatch(/app market-data API/i)
     expect(result.scannedCount).toBe(1)
     expect(result.recommendations[0].symbol).toBe('MOCK')
-    expect(result.recommendations[0].strategyFit).toMatch(/20 EMA/i)
+    expect(result.recommendations[0].currentPrice).toBe(119)
+    expect(result.recommendations[0].ema8).toBe(118)
+    expect(result.recommendations[0].ema20).toBe(120)
+    expect(result.recommendations[0].ema50).toBe(121)
+    expect(result.recommendations[0].sma50).toBe(117)
+    expect(result.recommendations[0].week52Low).toBe(96)
+    expect(result.recommendations[0].week52High).toBe(126)
   })
 
   it('ranks the same scanned universe differently for each strategy predicate', async () => {

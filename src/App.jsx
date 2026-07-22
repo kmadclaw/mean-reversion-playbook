@@ -276,6 +276,17 @@ function UniversePage() {
   )
 }
 
+function PriceRangeBar({ low, high, price }) {
+  const span = high - low
+  const position = span > 0 ? Math.max(0, Math.min(100, ((price - low) / span) * 100)) : 50
+  return (
+    <div className="range-cell" aria-label={`52 week range ${formatCurrency(low)} to ${formatCurrency(high)}`}>
+      <div className="range-track"><span style={{ left: `${position}%` }} /></div>
+      <div className="range-labels"><small>{formatCurrency(low)}</small><small>{position.toFixed(0)}%</small><small>{formatCurrency(high)}</small></div>
+    </div>
+  )
+}
+
 function ScannerResults({ result }) {
   const [pageIndex, setPageIndex] = useState(0)
   const pageSize = 12
@@ -296,8 +307,8 @@ function ScannerResults({ result }) {
       <div className="scanner-results__header">
         <div>
           <p className="eyebrow">{modeLabel} · {result.source}</p>
-          <h3>{result.strategyTitle} scanner recommendations</h3>
-          <p>Last run: {generated}. Results are generated for the selected strategy only.</p>
+          <h3>{result.strategyTitle} scanner results</h3>
+          <p>Last run: {generated}. Ranked by the selected setup; table shows technical indicators only.</p>
         </div>
         <span>{pageStart + 1}-{pageEnd} of {totalResults} shown · {result.passedCount ?? totalResults} passed · {result.scannedCount ?? '—'} scanned</span>
       </div>
@@ -312,43 +323,41 @@ function ScannerResults({ result }) {
         </button>
       </div>
 
-      <div className="recommendation-list">
-        {visibleRecommendations.map((trade, index) => (
-          <article className="recommendation-card" key={trade.symbol}>
-            <div className="recommendation-rank">#{pageStart + index + 1}</div>
-            <div className="recommendation-main">
-              <div className="recommendation-title">
-                <h4>{trade.symbol}</h4>
-                <span>{trade.direction}</span>
-              </div>
-              <p><strong>Strategy fit:</strong> {trade.strategyFit}</p>
-              <p>{trade.reasoning}</p>
-              {trade.warnings ? <small>{trade.warnings}</small> : null}
-            </div>
-            <dl className="recommendation-stats">
-              <div>
-                <dt>Score</dt>
-                <dd>{trade.score}</dd>
-              </div>
-              <div>
-                <dt>Structure</dt>
-                <dd>{trade.structure}</dd>
-              </div>
-              <div>
-                <dt>Expiry</dt>
-                <dd>{trade.expiry} · {trade.dte} DTE</dd>
-              </div>
-              <div>
-                <dt>Close / Target / Stop</dt>
-                <dd>{formatCurrency(trade.close)} → {formatCurrency(trade.target)} / {formatCurrency(trade.invalidation)}</dd>
-              </div>
-              <div>
-                <dt>RSI14</dt>
-                <dd>{trade.rsi14}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
+      <div className="scanner-table-wrap">
+        <table className="scanner-table" aria-label="Scanner indicator table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Symbol</th>
+              <th>Score</th>
+              <th>Current</th>
+              <th>RSI14</th>
+              <th>8 EMA</th>
+              <th>20 EMA</th>
+              <th>50 EMA</th>
+              <th>50 SMA</th>
+              <th>BB lower</th>
+              <th>52W range</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleRecommendations.map((trade, index) => (
+              <tr key={trade.symbol}>
+                <td>#{pageStart + index + 1}</td>
+                <th scope="row">{trade.symbol}</th>
+                <td>{trade.score}</td>
+                <td>{formatCurrency(trade.currentPrice ?? trade.close)}</td>
+                <td>{trade.rsi14}</td>
+                <td>{formatCurrency(trade.ema8)}</td>
+                <td>{formatCurrency(trade.ema20)}</td>
+                <td>{formatCurrency(trade.ema50)}</td>
+                <td>{formatCurrency(trade.sma50)}</td>
+                <td>{formatCurrency(trade.bbLower)}</td>
+                <td><PriceRangeBar low={trade.week52Low} high={trade.week52High} price={trade.currentPrice ?? trade.close} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   )
