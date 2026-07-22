@@ -41,7 +41,7 @@ describe('App strategy navigation', () => {
     expect(within(panel).getByText(/Last line of trend support/i)).toBeInTheDocument()
   })
 
-  it('loads the universe page with compact stock title, range stats, and interactive chart controls', () => {
+  it('loads the universe page as an indicator table beside the selectable chart panel', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network unavailable')))
     render(<App />)
 
@@ -49,19 +49,25 @@ describe('App strategy navigation', () => {
 
     expect(screen.getByRole('heading', { name: /Liquid options universe/i })).toBeInTheDocument()
     expect(screen.getByText(/100–150 liquid option names/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/AAPL/).length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/Apple/).length).toBeGreaterThan(0)
+    const universeTable = screen.getByRole('table', { name: /Liquid options universe indicator table/i })
+    expect(within(universeTable).getByRole('columnheader', { name: /Symbol/i })).toBeInTheDocument()
+    expect(within(universeTable).getByRole('columnheader', { name: /Current/i })).toBeInTheDocument()
+    expect(within(universeTable).getByRole('columnheader', { name: /RSI14/i })).toBeInTheDocument()
+    expect(within(universeTable).getByRole('columnheader', { name: /8 EMA/i })).toBeInTheDocument()
+    expect(within(universeTable).getByRole('columnheader', { name: /52W range/i })).toBeInTheDocument()
+    expect(within(universeTable).queryByRole('button', { name: /Apple/i })).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /XLP/i }))
+    const xlpButton = within(universeTable).getByRole('button', { name: /Select XLP/i })
+    fireEvent.click(xlpButton)
+    expect(xlpButton.closest('tr')).toHaveClass('active')
 
     const chart = screen.getByRole('region', { name: /Interactive price chart/i })
     expect(within(chart).getByRole('heading', { name: /XLP - Consumer Staples SPDR/i })).toBeInTheDocument()
     expect(within(chart).queryByText(/price chart/i)).not.toBeInTheDocument()
     expect(within(chart).getByRole('img', { name: /Interactive chart display/i })).toBeInTheDocument()
-    expect(within(chart).getByText(/Day low/i)).toBeInTheDocument()
-    expect(within(chart).getByText(/Day high/i)).toBeInTheDocument()
-    expect(within(chart).getByText(/52W low/i)).toBeInTheDocument()
-    expect(within(chart).getByText(/52W high/i)).toBeInTheDocument()
+    expect(within(chart).getByText(/RSI14/i)).toBeInTheDocument()
+    expect(within(chart).getByText(/20 EMA/i)).toBeInTheDocument()
+    expect(within(chart).getByText(/50 SMA/i)).toBeInTheDocument()
 
     const oneMonth = within(chart).getByRole('button', { name: /1M/i })
     fireEvent.click(oneMonth)

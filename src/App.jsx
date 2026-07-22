@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { LIQUID_OPTIONS_UNIVERSE } from './liquidUniverse'
-import { fetchSymbolSnapshot, scanStrategy } from './scannerEngine'
+import { fetchSymbolSnapshot, fetchUniverseSnapshots, scanStrategy } from './scannerEngine'
 import { bullishSetups, processRules, qualityScoreRules, strategyFramework } from './strategies'
 
 const pages = [
@@ -155,8 +155,11 @@ function makeFallbackSnapshot(symbol) {
     week52Low: Number((price * 0.72).toFixed(2)),
     week52High: Number((price * 1.18).toFixed(2)),
     rsi14: 48,
+    ema8: Number((price * 0.99).toFixed(2)),
     ema20: Number((price * 0.98).toFixed(2)),
+    ema50: Number((price * 0.965).toFixed(2)),
     sma50: Number((price * 0.95).toFixed(2)),
+    bbLower: Number((price * 0.9).toFixed(2)),
     chartPoints,
   }
 }
@@ -187,6 +190,8 @@ function UniversePage() {
   const [selectedSymbol, setSelectedSymbol] = useState('AAPL')
   const [selectedRange, setSelectedRange] = useState('3mo')
   const [snapshot, setSnapshot] = useState(makeFallbackSnapshot('AAPL'))
+  const fallbackSnapshots = () => Object.fromEntries(LIQUID_OPTIONS_UNIVERSE.map((stock) => [stock.symbol, makeFallbackSnapshot(stock.symbol)]))
+  const [universeSnapshots, setUniverseSnapshots] = useState(fallbackSnapshots)
   const selectedStock = LIQUID_OPTIONS_UNIVERSE.find((stock) => stock.symbol === selectedSymbol) ?? LIQUID_OPTIONS_UNIVERSE[0]
   const ranges = [
     { label: '1M', value: '1mo', points: 22 },
@@ -195,6 +200,22 @@ function UniversePage() {
   ]
   const activeRange = ranges.find((range) => range.value === selectedRange) ?? ranges[1]
   const visiblePoints = snapshot.chartPoints.slice(-activeRange.points)
+
+  useEffect(() => {
+    let active = true
+    fetchUniverseSnapshots(LIQUID_OPTIONS_UNIVERSE.map((stock) => stock.symbol))
+      .then((snapshots) => {
+        if (!active) return
+        setUniverseSnapshots((current) => ({
+          ...current,
+          ...Object.fromEntries(snapshots.map((nextSnapshot) => [nextSnapshot.symbol, nextSnapshot])),
+        }))
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -214,25 +235,56 @@ function UniversePage() {
       <PageHeader
         eyebrow="Scanner coverage"
         title="Liquid options universe"
-        description={`${LIQUID_OPTIONS_UNIVERSE.length} names from a curated 100–150 liquid option names universe. Click a tile to load the price detail panel and interactive chart display.`}
+        description={`${LIQUID_OPTIONS_UNIVERSE.length} names from a curated 100–150 liquid option names universe. Select a table row to load the price detail panel and interactive chart display.`}
       />
       <div className="universe-layout">
-        <div className="universe-grid" aria-label="Stock universe tiles">
-          {LIQUID_OPTIONS_UNIVERSE.map((stock) => (
-            <button
-              type="button"
-              key={stock.symbol}
-              className={stock.symbol === selectedSymbol ? 'universe-tile active' : 'universe-tile'}
-              onClick={() => {
-                setSelectedSymbol(stock.symbol)
-                setSelectedRange('3mo')
-              }}
-            >
-              <strong>{stock.symbol}</strong>
-              <span>{stock.name}</span>
-              <small>{stock.group}</small>
-            </button>
-          ))}
+        <div className="universe-table-wrap">
+          <table className="universe-table" aria-label="Liquid options universe indicator table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Group</th>
+                <th>Current</th>
+                <th>RSI14</th>
+                <th>8 EMA</th>
+                <th>20 EMA</th>
+                <th>50 EMA</th>
+                <th>50 SMA</th>
+                <th>52W range</th>
+              </tr>
+            </thead>
+            <tbody>
+              {LIQUID_OPTIONS_UNIVERSE.map((stock) => {
+                const rowSnapshot = universeSnapshots[stock.symbol] ?? makeFallbackSnapshot(stock.symbol)
+                const isActive = stock.symbol === selectedSymbol
+                return (
+                  <tr className={isActive ? 'active' : undefined} key={stock.symbol}>
+                    <th scope="row">
+                      <button
+                        type="button"
+                        className="universe-symbol-button"
+                        onClick={() => {
+                          setSelectedSymbol(stock.symbol)
+                          setSelectedRange('3mo')
+                        }}
+                        aria-label={`Select ${stock.symbol}`}
+                      >
+                        {stock.symbol}
+                      </button>
+                    </th>
+                    <td>{stock.group}</td>
+                    <td>{formatCurrency(rowSnapshot.price)}</td>
+                    <td>{rowSnapshot.rsi14}</td>
+                    <td>{formatCurrency(rowSnapshot.ema8)}</td>
+                    <td>{formatCurrency(rowSnapshot.ema20)}</td>
+                    <td>{formatCurrency(rowSnapshot.ema50)}</td>
+                    <td>{formatCurrency(rowSnapshot.sma50)}</td>
+                    <td><PriceRangeBar low={rowSnapshot.week52Low} high={rowSnapshot.week52High} price={rowSnapshot.price} /></td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
         <aside className="chart-panel" role="region" aria-label="Interactive price chart">
           <div className="chart-panel__header">
@@ -267,8 +319,11 @@ function UniversePage() {
             <div><dt>52W low</dt><dd>{formatCurrency(snapshot.week52Low)}</dd></div>
             <div><dt>52W high</dt><dd>{formatCurrency(snapshot.week52High)}</dd></div>
             <div><dt>RSI14</dt><dd>{snapshot.rsi14}</dd></div>
+            <div><dt>8 EMA</dt><dd>{formatCurrency(snapshot.ema8)}</dd></div>
             <div><dt>20 EMA</dt><dd>{formatCurrency(snapshot.ema20)}</dd></div>
+            <div><dt>50 EMA</dt><dd>{formatCurrency(snapshot.ema50)}</dd></div>
             <div><dt>50 SMA</dt><dd>{formatCurrency(snapshot.sma50)}</dd></div>
+            <div><dt>BB lower</dt><dd>{formatCurrency(snapshot.bbLower)}</dd></div>
           </dl>
         </aside>
       </div>
