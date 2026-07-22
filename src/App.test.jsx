@@ -65,6 +65,10 @@ describe('App strategy navigation', () => {
     expect(xlpRow.querySelector('.mobile-row-chips')).toBeInTheDocument()
     fireEvent.click(xlpButton)
     expect(xlpRow).toHaveClass('active')
+    const inlineChartRow = xlpRow.nextElementSibling
+    expect(inlineChartRow).toHaveClass('universe-inline-chart-row')
+    expect(inlineChartRow.querySelector('.mobile-inline-chart')).toBeInTheDocument()
+    expect(inlineChartRow.textContent).toContain('XLP - Consumer Staples SPDR')
 
     const chart = screen.getByRole('region', { name: /Interactive price chart/i })
     expect(within(chart).getByRole('heading', { name: /XLP - Consumer Staples SPDR/i })).toBeInTheDocument()
@@ -73,6 +77,15 @@ describe('App strategy navigation', () => {
     expect(within(chart).getByText(/RSI14/i)).toBeInTheDocument()
     expect(within(chart).getByText(/20 EMA/i)).toBeInTheDocument()
     expect(within(chart).getByText(/50 SMA/i)).toBeInTheDocument()
+
+    const xlvButton = within(universeTable).getAllByRole('button', { name: /Select XLV/i })[0]
+    const xlvRow = xlvButton.closest('tr')
+    fireEvent.click(xlvButton)
+    expect(xlpRow).not.toHaveClass('active')
+    expect(xlvRow).toHaveClass('active')
+    expect(xlpRow.nextElementSibling).not.toHaveClass('universe-inline-chart-row')
+    expect(xlvRow.nextElementSibling).toHaveClass('universe-inline-chart-row')
+    expect(xlvRow.nextElementSibling.textContent).toContain('XLV - Health Care Select Sector SPDR')
 
     const oneMonth = within(chart).getByRole('button', { name: /1M/i })
     fireEvent.click(oneMonth)

@@ -551,6 +551,11 @@ li {
   display: inline;
 }
 
+.universe-inline-chart-row,
+.mobile-inline-chart {
+  display: none;
+}
+
 .rule-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -987,6 +992,7 @@ li {
   }
 
   .desktop-symbol,
+  .desktop-chart-panel,
   .scanner-table .rank-cell,
   .scanner-table .score-cell,
   .scanner-table .rsi-cell,
@@ -1026,6 +1032,40 @@ li {
   .scanner-table td[data-label='52W range']::before,
   .universe-table td[data-label='52W range']::before {
     margin-bottom: 2px;
+  }
+
+  .universe-inline-chart-row {
+    display: block;
+    margin-top: -10px;
+  }
+
+  .universe-table .universe-inline-chart-row td {
+    display: block;
+    padding: 0 0 10px;
+    border: 0;
+    text-align: left;
+  }
+
+  .universe-table .universe-inline-chart-row td::before {
+    content: none;
+  }
+
+  .mobile-inline-chart {
+    display: block;
+    position: static;
+    margin-top: -2px;
+    padding: 12px;
+    border-color: #ffd3bf;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  }
+
+  .mobile-inline-chart .price-chart {
+    height: 150px;
+  }
+
+  .mobile-inline-chart .price-stats--wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .range-cell {
